@@ -3,7 +3,7 @@
 <style|<tuple|tmbook|padded-paragraphs|page-numbers>>
 
 <\body>
-  <space|11em>
+  \;
 
   <space|10em><strong|<strong|<strong|<space|5em><abstract-data|<abstract|>>>>>
 
@@ -26,7 +26,7 @@
   n-d array paradigm by targetting the concurrecy available across the array
   operations in a workload. We do this by extending PYTATO, a
   lazy-evalulation based array package with NUMPY-like semantics, to target
-  NVIDIA's CUDAGraph API. While works such as Legate Numpy are also based on
+  NVIDIA's CUDA Graph API. While works such as Legate Numpy are also based on
   data flow graphs, it does not contain any scheduling heuristics thus
   restricting its view of the global optimization space. Other works such as
   CuPy, Julia and JAX still rely on a single stream dispatch. While we
@@ -71,9 +71,9 @@
 
   \;
 
-  1. What problems do CUDAGraphs solve ?
+  1. What problems do CUDA Graphs solve ?
 
-  CUDAGraphs, first introduced in CUDA 10, is a new programming model that
+  CUDA Graphs, first introduced in CUDA 10, is a new programming model that
   allows asynchronous execution of a user-defined DAG. These DAGs are made up
   of a set of node representing operations such as memory copies and kernel
   launches, connected by edges representing run-after dependencies which are
@@ -89,9 +89,9 @@
 
   2. Why having a CUDAGraph-based array package makes sense ?
 
-  While there have been attempts at simplifying CUDAGraph API usage and
+  While there have been attempts at simplifying CUDA Graph API usage and
   creating task graph based array-packages, there's a need for an end-to-end
-  NUMPY-based package that leverages CUDAGraph's runtime scheduler without
+  NUMPY-based package that leverages CUDA Graph's runtime scheduler without
   incurring significant overheads. We attempt to tackle this problem by
   extending PYCUDA to allow calls to the CUDAGraph API and then porting into
   PYTATO's lazy-evaluation based interface.
@@ -100,73 +100,9 @@
 
   3. Key contributions:
 
-  a. Extend PYCUDAto generate CUDAGraph custom API C driver code.
+  a. Extend PYCUDA to generate CUDA Graph custom API C driver code.
 
-  b. Map PYTATO's IR onto PyCUDA-CUDAGraph code.
-
-  \;
-
-  \;
-
-  \;
-
-  \;
-
-  \;
-
-  \;
-
-  \;
-
-  \;
-
-  \;
-
-  \;
-
-  \;
-
-  \;
-
-  \;
-
-  <section|RELATED WORK>
-
-  \;
-
-  \;
-
-  \;
-
-  \;
-
-  \;
-
-  \;
-
-  \;
-
-  \;
-
-  \;
-
-  \;
-
-  \;
-
-  \;
-
-  \;
-
-  \;
-
-  \;
-
-  \;
-
-  \;
-
-  \;
+  b. Map PYTATO's IR onto PyCUDA-CUDA Graph code.
 
   \;
 
@@ -216,9 +152,8 @@
   construct a graph of compute, host and copy operations with arbitary intra-
   and inter- stream synchronization, to then dispatch the previously
   displayed operations with a single CPU runtime function. Dispatching a
-  CUDAGraph can be an iterative or periodic operation, so to implement
-  GPU-CPU taskets as periodic DAGs which is an appealing mechanizm for the
-  real-time systems engineer.
+  CUDAGraph can be an iterative or periodic operation so GPU-CPU taskets can
+  be implemented as periodic DAGs.
 
   \;
 
@@ -226,9 +161,17 @@
 
   \;
 
+  <subsection|PYCUDA>
+
+  PYCUDA is a run time code generation based PYTHON package that offers a
+  high level scripting interface for GPU programming. In this context, since
+  PYCUDA already provided a rich ecosystem of abstractions around the CUDA
+  driver API, we decided to extend PYCUDA by wrapping the new CUDAGraph
+  custom API functions.
+
   \;
 
-  <subsection|PYCUDA>
+  (Provide example of PyCUDA CUDAGraph code)
 
   \;
 
@@ -236,9 +179,9 @@
 
   PYTATO is a lazy-evaluation programming based PYTHON package that offers a
   subset of NUMPY operations for manipulating multidimensional arrays. This
-  provides the ease of convenience in managing scientific computing workloads
+  provides ease of convenience in managing scientific computing workloads
   (PDE-based numerical methods, deep learning, computational statistics etc.)
-  where the higher dimensional visualziation of data is close to the
+  where the higher dimensional vizualization of data is close to the
   mathematical notation.
 
   In the context of CUDAGraphs, the compilation pipeline is split into the
@@ -263,6 +206,60 @@
   \;
 
   \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
 </body>
 
 <\initial>
@@ -275,13 +272,14 @@
 
 <\references>
   <\collection>
-    <associate|auto-1|<tuple|?|1|../../.TeXmacs/texts/scratch/no_name_2.tm>>
-    <associate|auto-2|<tuple|1|2|../../.TeXmacs/texts/scratch/no_name_2.tm>>
-    <associate|auto-3|<tuple|2|?|../../.TeXmacs/texts/scratch/no_name_2.tm>>
-    <associate|auto-4|<tuple|3|?|../../.TeXmacs/texts/scratch/no_name_2.tm>>
-    <associate|auto-5|<tuple|3.1|?|../../.TeXmacs/texts/scratch/no_name_2.tm>>
-    <associate|auto-6|<tuple|3.2|?|../../.TeXmacs/texts/scratch/no_name_2.tm>>
-    <associate|auto-7|<tuple|3.3|?|../../.TeXmacs/texts/scratch/no_name_2.tm>>
+    <associate|auto-1|<tuple|?|1|../../../.TeXmacs/texts/scratch/no_name_2.tm>>
+    <associate|auto-2|<tuple|1|2|../../../.TeXmacs/texts/scratch/no_name_2.tm>>
+    <associate|auto-3|<tuple|2|3|../../../.TeXmacs/texts/scratch/no_name_2.tm>>
+    <associate|auto-4|<tuple|2.1|4|../../../.TeXmacs/texts/scratch/no_name_2.tm>>
+    <associate|auto-5|<tuple|2.2|4|../../../.TeXmacs/texts/scratch/no_name_2.tm>>
+    <associate|auto-6|<tuple|2.3|4|../../../.TeXmacs/texts/scratch/no_name_2.tm>>
+    <associate|auto-7|<tuple|3.3|4|../../../.TeXmacs/texts/scratch/no_name_2.tm>>
+    <associate|auto-8|<tuple|4|?|../../../.TeXmacs/texts/scratch/no_name_2.tm>>
   </collection>
 </references>
 
@@ -294,6 +292,24 @@
 
       1.<space|2spc>INTRODUCTION <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
       <no-break><pageref|auto-2>
+
+      2.<space|2spc>RELATED WORK <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
+      <no-break><pageref|auto-3>
+
+      3.<space|2spc>OVERVIEW <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
+      <no-break><pageref|auto-4>
+
+      <with|par-left|<quote|1tab>|3.1.<space|2spc>CUDA Graphs
+      <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
+      <no-break><pageref|auto-5>>
+
+      <with|par-left|<quote|1tab>|3.2.<space|2spc>PYCUDA
+      <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
+      <no-break><pageref|auto-6>>
+
+      <with|par-left|<quote|1tab>|3.3.<space|2spc>PYTATO
+      <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
+      <no-break><pageref|auto-7>>
     </associate>
   </collection>
 </auxiliary>

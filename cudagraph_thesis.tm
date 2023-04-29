@@ -130,6 +130,38 @@
 
   \;
 
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
   <section|OVERVIEW>
 
   <subsection|<verbatim|CUDA Graphs>>
@@ -154,13 +186,11 @@
   <verbatim|CUDA Graph> can be an iterative or periodic operation so GPU-CPU
   taskets can be implemented as periodic DAGs.
 
+  \;
+
   We wrapped the <verbatim|CUDA Graph> driver API using <verbatim|Pycuda>
   which provided a high level <verbatim|Python> scripting interface for GPU
   programming.
-
-  \;
-
-  \;
 
   <\python-code>
     g = drv.Graph() # Create Graph
@@ -328,6 +358,46 @@
     <strong|end function>
   </named-algorithm>
 
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
   <\python-code>
     _pt_mod_0 = _pt_SourceModule("
 
@@ -432,8 +502,8 @@
   interface that allows programmers to explicitly declare different
   properties of program data, such as data organization, partioning and
   control the mapping of tasks onto different architectures. The programming
-  model uses a software out-of-order processor, or SOOP, for scheduling tasks
-  which takes locality and independence properties captured by logical
+  model uses a <em|software out-of-order processor>, or SOOP, for scheduling
+  tasks which takes locality and independence properties captured by logical
   regions while making scheduling decisions. While it provides the ability to
   partition data in multiple ways and to migrate data dynamically between
   these views as the application moves between different phases of

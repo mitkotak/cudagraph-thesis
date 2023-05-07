@@ -1,0 +1,785 @@
+\documentclass{book}
+\usepackage[english]{babel}
+\usepackage{amsmath,graphicx,calc,ifthen,tabularx,capt-of}
+
+%%%%%%%%%% Start TeXmacs macros
+\catcode`\<=\active \def<{
+\fontencoding{T1}\selectfont\symbol{60}\fontencoding{\encodingdefault}}
+\newcommand{\tmem}[1]{{\em #1\/}}
+\newcommand{\tmname}[1]{\textsc{#1}}
+\newcommand{\tmnote}[1]{\thanks{\textit{Note:} #1}}
+\newcommand{\tmsamp}[1]{\textsf{#1}}
+\newcommand{\tmstrong}[1]{\textbf{#1}}
+\newcommand{\tmsubtitle}[1]{\thanks{\textit{Subtitle:} #1}}
+\newcommand{\tmverbatim}[1]{\text{{\ttfamily{#1}}}}
+\newenvironment{itemizedot}{\begin{itemize} \renewcommand{\labelitemi}{$\bullet$}\renewcommand{\labelitemii}{$\bullet$}\renewcommand{\labelitemiii}{$\bullet$}\renewcommand{\labelitemiv}{$\bullet$}}{\end{itemize}}
+\newenvironment{tmindent}{\begin{tmparmod}{1.5em}{0pt}{0pt}}{\end{tmparmod}}
+\newenvironment{tmparmod}[3]{\begin{list}{}{\setlength{\topsep}{0pt}\setlength{\leftmargin}{#1}\setlength{\rightmargin}{#2}\setlength{\parindent}{#3}\setlength{\listparindent}{\parindent}\setlength{\itemindent}{\parindent}\setlength{\parsep}{\parskip}} \item[]}{\end{list}}
+\newenvironment{tmparsep}[1]{\begingroup\setlength{\parskip}{#1}}{\endgroup}
+\newcommand{\tmfloatcontents}{}
+\newlength{\tmfloatwidth}
+\newcommand{\tmfloat}[5]{
+  \renewcommand{\tmfloatcontents}{#4}
+  \setlength{\tmfloatwidth}{\widthof{\tmfloatcontents}+1in}
+  \ifthenelse{\equal{#2}{small}}
+    {\setlength{\tmfloatwidth}{0.45\linewidth}}
+    {\setlength{\tmfloatwidth}{\linewidth}}
+  \begin{minipage}[#1]{\tmfloatwidth}
+    \begin{center}
+      \tmfloatcontents
+      \captionof{#3}{#5}
+    \end{center}
+  \end{minipage}}
+%%%%%%%%%% End TeXmacs macros
+
+%
+
+\newcommand{\pythoncode}[1]{{\pseudocode{{\python{#1}}}}}
+\newcommand{\pythondtd}{1.0}
+
+\begin{document}
+
+\
+
+\
+
+\
+
+\
+
+\
+
+\
+
+\
+
+\
+
+\title{Efficient Execution of DG-FEM workloads on GPUs via
+\tmverbatim{CUDAGraphs}}
+
+
+
+\tmsubtitle{\
+
+\
+
+Senior Thesis}
+
+\tmnote{\tmsubtitle{\
+
+Faculty Mentor: Andreas Kl{\"o}ckner
+
+Graduate Mentor: Kaushik Kulkarni \ }}
+
+\
+
+\
+
+\
+
+\
+
+\
+
+\begin{abstract}
+  Array programming paradigm offers routines to express the computation
+  cleanly for for a wide variety of scientific computing applications (Finite
+  Element Method, Stencil Codes, Image Processing, Machine Learning, etc.).
+  While these routines are optimized to provide efficient data structures and
+  fast library implementations for many common array operations, the
+  performance benefits are tied to optimized method calls and vectorized array
+  operations, both of which evaporate in larger scientific codes that do not
+  adhere to these constraints. While there have been a lot of efforts in
+  scaling up n-d array applications through kernel and loop fusion, very
+  little attention has been paid towards harnesssing the concurrency across
+  array operations. The dependency pattern between these array operations
+  allow multiple array operations to be executed concurrently. This
+  concurrency can be targeted to accelarate the application's performance.
+  NVIDIA's \tmverbatim{CUDAGraph} API offers a task programming model that can
+  help realise this concurrency by overcoming kernel launch latencies and
+  exploiting kernel overlap by scheduling multiple kernel executions in
+  parallel. In this work we create a task-based lazy-evaluation array
+  programming interface by mapping array operations onto
+  \tmverbatim{CUDAGraphs} using \tmverbatim{Pytato's} IR and
+  \tmverbatim{PyCUDA's} GPU scripting interface. To evaluate the soundness of
+  this approach, we port a suite of complex operators that represent real
+  world workloads to our framework and compare the performance with a version
+  where the array operations are executed one after the other. We observe a
+  performance of upto X for Wave operators, Y for Euler Operators and X for
+  Compressible Navier Stokes.
+\end{abstract}
+
+\
+
+\
+
+\
+
+\
+
+\
+
+\
+
+\
+
+\
+
+\
+
+\
+
+\
+
+\
+
+\
+
+\
+
+\section{INTRODUCTION}
+
+Array programming is a fundamental computation model that supports a wide
+variety of features, including array slicing and arbitary element-wise,
+reduction and broadcast operators allowing the interface to correspond closely
+to the mathematical needs of the applications. \tmverbatim{PyCUDA} and several
+other array-based frameworks serve as drop-in replacements for accelarating
+\tmverbatim{Numpy-like} operations on GPUs. While abstractions like
+\tmverbatim{GPUArray}'s offer a very convenient abstraction for doing
+``stream'' computing on these arrays, they are not yet able to automatically
+schedule and manage overlapping array operations onto multiple streams. The
+concurrency available in the dependency pattern for these array routines can
+be exploited to saturate all of the available execution units [Fig. 1].
+
+Currently the only way to tap into this concurrency is by manually scheduling
+array operations onto mutliple CUDA streams which typically requires a lot of
+experimentation since information about demand resources of a kernel such as
+GPU threads, registers and shared memory is only accessible at runtime.
+
+\
+
+\tmfloat{h}{small}{figure}{\raisebox{-0.00169399557973028\height}{\includegraphics[width=14.8909550045914cm,height=4.95611963793782cm]{cudagraph_thesis-1.pdf}}
+
+\raisebox{-0.00169399557973028\height}{\includegraphics[width=14.8909550045914cm,height=4.95611963793782cm]{cudagraph_thesis-2.pdf}}}{Profiles
+for CUDAGraph (top) and PyCUDA (bottom) for
+\tmverbatim{where}({\tmem{condition, if, else}}) \tmverbatim{+}
+\tmverbatim{1}}
+
+\
+
+Our framework realises this concurrency across array operations through
+\tmverbatim{NVIDIA's} \tmverbatim{CUDAGraph} API. \tmverbatim{CUDAGraph},
+first introduced in \tmverbatim{CUDA} \tmverbatim{10}, is a task-based
+programming model that allows asynchronous execution of a user-defined
+Directed Acyclic Graph (DAG). These DAGs are made up of a set of node
+representing operations such as memory copies and kernel launches, connected
+by edges representing run-after dependencies which are defined separetly from
+its execution through a custom API.
+
+\tmfloat{h}{small}{figure}{\raisebox{-0.00118218320607162\height}{\includegraphics[width=13.4035320739866cm,height=7.10181359044995cm]{cudagraph_thesis-3.pdf}}}{\tmverbatim{CUDAGraph}
+API generated graph for \tmverbatim{where}({\tmem{condition, if, else}})
+\tmverbatim{+} \tmverbatim{1}}
+
+We formulate our system by buiding a \tmverbatim{CUDAGraph}-based
+\tmverbatim{PyCUDA} target for \tmverbatim{Pytato's} IR which captures the
+user-defined DAG. The key technical contributions of our system involve:
+\begin{enumerate}
+  \item Extending {\tmsamp{\tmverbatim{PyCUDA}}} to allow calls to the
+  \tmverbatim{CUDAGraph} API
+  
+  \item Mapping the array operations onto a DAG through \tmverbatim{Pytato'}s
+  IR to generate \tmverbatim{PyCUDA}- \tmverbatim{CUDAGraph} code.
+\end{enumerate}
+
+\section{Related work}
+
+The literature on task-based array programming can be classified roughly
+according to their choice of task granularity.
+
+{\tmem{Function}}: Castro et give an overview of the current task-based
+\tmverbatim{Python} computing landscape by mentioning several libraries that
+rely on {\tmem{decorators}}. A decorator is an instruction set before the
+definition of a function. The decorator function transforms the user function
+(if applicable) into a parallelization-friendly version. Libraries such as
+\tmverbatim{PyCOMPs}, \tmverbatim{Pygion}, \tmverbatim{PyKoKKos} and
+\tmverbatim{Legion} make use of this core principle to accelarate
+{\tmem{vanilla}} \tmverbatim{Python} code. \tmverbatim{PyCOMPs} and
+\tmverbatim{Pygion} both rely on \tmverbatim{@task} decorator to build a task
+dependency graph and define the order of execution. \tmverbatim{PyKoKKos}
+ports into the \tmverbatim{KoKKos} API and passes the
+\tmverbatim{@pk.workunit} decorator into the \tmverbatim{parallel\_for()}
+function. \tmverbatim{Legion} uses a data-centric programming model which
+relies on {\tmem{software out-of-order processor}} (SOOP), for scheduling
+tasks which takes locality and independence properties captured by logical
+regions while making scheduling decisions.
+
+In \tmverbatim{Jug}, arguments take values or outputs of another tasks and
+parallelization is achieved by running more than one \tmverbatim{Jug}
+processes for distributing the tasks. In \tmverbatim{Pydron}, decorated
+functions are first translated into an intermediate representation and then
+analyzed by a scheduler which updates the execution graph as each task is
+finished.
+
+Since all of these frameworks rely on explicit taks declarations, they are not
+able to realise the concurrency available across array operations.
+
+{\tmem{Stream}}: \tmverbatim{CuPy} serves as a drop-in replacement to
+\tmverbatim{Numpy} and uses NVIDIA's in-house CUDA frameworks such
+as\tmverbatim{ cuBLAS}, \tmverbatim{cuDNN} and \tmverbatim{cuSPARSE} to
+accelerate its performance. \tmverbatim{Julia} GPU programming models
+use\tmverbatim{ CUDA.jl} to provide a high level mechanics to define
+multidimenstional arrays (\tmverbatim{CUArray}). Both \tmverbatim{CuPy} and
+\tmverbatim{Julia }offer interfaces for {\tmem{implcit}} graph construction
+which {\tmem{captures}} a \tmverbatim{CUDAGraph} using existing stream-based
+APIs. Implicit \tmverbatim{CUDAGraph} construction is more flexible and
+general, but requires to wrangle with conconcurrency details through events
+and streams.
+
+{\tmem{Graph}}: \tmverbatim{JAX} optimizes GPU peformance by translating
+{\tmem{high-level traces}} into XL HLO and then performing
+vectorization/parallelization, automatic differentiation, and \tmverbatim{JIT
+}compilation. Deep learning symbolic mathematical libraries such as
+\tmverbatim{TensorFlow} and \tmverbatim{Pytorch} allow neural networks to be
+specified as DAGs along which data is transformed. Just like
+\tmverbatim{CUDAGraphs}, in \tmverbatim{TensorFlow}, computational DAGs are
+defined statically so that their compilation and execution yield maximum
+performance. \tmverbatim{PyTorch} on the other hand offers more control at
+runtime by allowing the modification of executing nodes facilitating the
+implementation of sophosticated training routines.
+
+{\tmem{Kernel}}: \tmverbatim{StarPU} supports a task-based programming model
+by scheduling tasks efficiently using well-known generic dynamic and task
+graph scheduling policies from the literature, and optimizing data transfers
+using prefetching and overallaping. Each StarPU task describes the computation
+kernel, possible implementations on different architectures (CPUs/GPUs), what
+data is being accessed and how its accessed during comptuation (read/write
+mode). Task dependencies are inferred from data dependencies.
+
+\section{OVERVIEW}
+
+\subsection{\tmverbatim{CUDA Graphs}}
+
+\tmverbatim{CUDAGraphs} provide a way to execute a partially ordered set of
+compute/memory operations on a GPU, compared to the fully ordered
+\tmverbatim{CUDA} streams: : a stream in \tmverbatim{CUDA} is a queue of copy
+and compute commands. Within a stream, enqueueud operations are implicitly
+synchronized by the GPU in order to execute them in the same order as they are
+placed into the stream by the programmer. Streams allow for aschnronous
+compute and copy, meaning that CPU cores dispatch commands without waiting for
+their GPU-side completition: even in asynchronous submissions, little to no
+control is left to the programmer with respect to when commands are
+inserted/fetched to/from the stream and then dispatched to the GPU engines,
+with these operations potentially overallaping in time.
+
+\tmverbatim{CUDAGraphs} faciliate the mapping of independent A
+\tmverbatim{CUDAGraph} is a set of nodes representing memory/compute
+operations, connected by edges representing run-after dependencies.
+\tmverbatim{CUDA} 10 introduces explicit APIs for creating graphs, e.g.
+{\tmem{cuGraphCreate}}, to create a graph;
+{\tmem{cuGraphAddMemAllocNode}}/{\tmem{cuGraphAddKernelNode}}/{\tmem{cuGraphMemFreeNode}},
+to add a new node to the graph with the corresponding run-after dependencies
+with previous nodes to be exected on the GPU; {\tmem{cuGraphInstantiate}}, to
+create an executable graph in a stream; and a {\tmem{cuGraphLaunch}}, to
+launch an executable graph. We wrapped this API using \tmverbatim{PyCUDA}
+which provided a high level \tmverbatim{Python} scripting interface for GPU
+programming. The table below lists commonly used
+\tmverbatim{{\tmem{{\tmem{PyCUDA-CUDAGraph}}\tmverbatim{}}}} functions. Refer
+to [link] for a comprehensive list of wrapped functions.
+
+\begin{table}[h]
+  \begin{tabular}{ll}
+    & \\
+    {\tmstrong{Operations}} & {\tmstrong{\tmverbatim{PyCUDA} routines}}\\
+    & \\
+    Memory Allocation & \tmverbatim{add\_memalloc\_node}\\
+    Kernel Execution & \tmverbatim{add\_kernel\_node}\\
+    Host to Device Copy & \tmverbatim{add\_memcpy\_htod\_node}\\
+    Device to Device Copy & \tmverbatim{add\_memcpy\_dtod\_node}\\
+    Device to Host Copy & \tmverbatim{add\_memcpy\_dtoh\_node}\\
+    Memory Free & \tmverbatim{add\_memfree\_node}\\
+    Graph Creation & \tmverbatim{Graph}\\
+    Graph Instantiation & \tmverbatim{GraphExec}\\
+    Update ExecGraph arguments &
+    \tmverbatim{batched\_set\_kernel\_node\_arguments}\\
+    Graph Launch & \tmverbatim{launch}
+  \end{tabular}
+  \caption{{\tmsamp{PyCUDA}} wrapper functions around {\tmsamp{CUDAGraph}}
+  API}
+\end{table}
+
+Here's a simple example demonstrating CUDAGraph functionality:
+
+{\pythoncode{\# Create Graph
+
+g = drv.Graph()
+
+\
+
+\# Create and load kernel module
+
+mod = SourceModule("
+
+\ \ \ \ \ \#define bIdx(N) ((int) blockIdx.N)\textbackslash n\#define tIdx(N)
+((int)
+
+\ \ \ \ \ threadIdx.N)\textbackslash n\textbackslash nextern "C"
+\_\_global\_\_ void \_\_launch\_bounds\_\_(16) \ \ \ \ \ \ \ \ doublify(double
+
+\ \ \ \ \ *\_\_restrict\_\_ out, double const *\_\_restrict\_\_
+\_in1)\textbackslash n\{\textbackslash n \ \{\textbackslash n \ \ \ \ \ \ \ \
+\ \ \ int const ibatch = 0;\textbackslash n\textbackslash n \ \ \ out[4 *
+(tIdx(x) / 4) + tIdx(x) + -4 * \ \ \ \ \ (tIdx(x) / 4)] = 2.0 * \_in1[4 *
+(tIdx(x) / 4) + tIdx(x) + -4 * ( \ \ \ \ \ \ \ \ \ tIdx(x) /
+4)];\textbackslash n \ \}\textbackslash n\}")
+
+\
+
+\# Get kernel function
+
+doublify = mod.get\_function("doublify") \ \ \ \ \
+
+\
+
+\# Initialize input array
+
+a = np.random.randn(4, 4).astype(np.float64)
+
+\
+
+\# Initialize result array
+
+a\_doubled = np.empty\_like(a) \
+
+\
+
+\# Allocate memory on GPU for input array
+
+a\_gpu = drv.mem\_alloc(a.nbytes)
+
+\
+
+\# Add memcpy node for host to device transfer
+
+memcpy\_htod\_node = g.add\_memcpy\_htod\_node(a\_gpu, a, a.nbytes)
+
+\
+
+\# Add kernel node for array operation
+
+kernel\_node = g.add\_kernel\_node(a\_gpu, func=doublify, block=(4, 4, 1), \ \
+\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \
+dependencies=[memcpy\_htod\_node])
+
+\
+
+\# Add memcpy node for device to host transfer
+
+memcpy\_dtoh\_node = g.add\_memcpy\_dtoh\_node(a\_doubled, a\_gpu, a.nbytes, \
+\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \
+[kernel\_node, memcpy\_htod\_node])
+
+\
+
+\# Instantite execution graph
+
+g\_exec = drv.GraphExec(g)
+
+\
+
+\# Launch execution graph on default stream
+
+g\_exec.launch()}}
+
+\subsection{\tmverbatim{Loopy}}
+
+Loopy is \tmverbatim{a Python}-based transformation toolkit to generate
+transformed kernels. We make use of the following components in our pipeline
+to generate performance tuned \tmverbatim{CUDA} kernels:
+
+1. {\tmem{Loop Domains}}: \ The upper and lower bounds of the result array's
+memory access pattern in the \tmverbatim{OpenCL} format sourced from the
+\tmverbatim{shape} attribute within \tmverbatim{IndexLambda} and expressed
+using the \tmverbatim{isl} library.
+
+2. {\tmem{Statement:}} A set of instructions specificed in conjuction with an
+iteration domain which encodes an assignment to an entry of an array. The
+right-hand side of an assignment consists of an expression that may consist of
+arithmetic operations and calls to functions. \
+
+3. {\tmem{Kernel Data}}: A sorted list of arguments capturing all of the
+array node's dependencies.
+
+{\pythoncode{lp.make\_kernel(
+
+\ domains = "\{[\_0]:0<=\_0<4\}\}",
+
+\ instructions = "out[\_0]=2*a[\_0]",
+
+\ kernel\_data = [lp.GlobalArg("out", shape=lp.auto, dtype="float64"),
+
+\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ lp.GlobalArg("a", shape=lp.auto,
+dtype="float64")])}}
+
+\subsection{\tmverbatim{Pytato}}
+
+\tmverbatim{Pytato} is a lazy-evaluation programming based \tmverbatim{Python}
+package that offers a subset of \tmverbatim{Numpy} operations for manipulating
+multidimensional arrays. This provides the convenience of realzing
+one-dimensional layout of memory buffer for large scale multidimensional
+scientific computing workloads (PDE-based numerical methods, deep learning,
+computational statistics etc.) where the higher dimensional vizualization of
+data is close to the mathematical notation.
+
+Pytato's IR encodes user defined array computations as a DAG where nodess
+correspond to array operations and edges representing dependencies between
+inputs/outputs of these operations. We map the set of nodes provided by
+Pytato's IR onto the following two node to simplify code generation:
+
+1. {\tmem{Placeholder}}: A named abstract array whose shape and dtype is known
+with data supplied during runtime. This permits the automated gathering of a
+self-contained description of a piece of code without incurring the penalty
+faced by repeated memory transfers from the device's DRAM to lower levels of
+cache.
+
+2. {\tmem{IndexLambda}}: Represents an array comprehension recording a scalar
+expression containing per index value of the array computation. This helps
+create a generalized
+
+Here's a simple example demonstrating \tmverbatim{Pytato} usage
+
+{\pythoncode{\# Create Placeholder node for storing array description
+
+\
+
+x = pt.make\_placeholder(name="x", shape=(4,4), dtype="float64")
+
+\
+
+\# Express array computation as a scalar expression using Indexlambda
+
+\
+
+result = 2*x
+
+\
+
+\# \{\{\{ execute
+
+\
+
+import pyopencl as cl
+
+ctx = cl.create\_some\_context()
+
+queue = cl.CommandQueue(ctx)
+
+prg = pt.generate\_loopy(result, cl\_device=queue.device)
+
+a = np.random.randn(4, 4).astype(np.float64)
+
+\_, out = prg(queue, x=x)
+
+\
+
+\# \}\}\}}}
+
+\begin{figure}[h]
+  \raisebox{-0.00167820982211631\height}{\includegraphics[width=7.45387314705497cm,height=5.00273842319297cm]{cudagraph_thesis-4.pdf}}
+  \caption{Pytato IR corresponding to doubling operation}
+\end{figure}
+
+\section{Array Operations to CudaGraph Transformation}
+
+Pytato provides a \tmverbatim{pt.compile} decorator which triggers a two-stage
+code generation process that traces the array program and generates
+\tmverbatim{PyCUDA-CUDAGraph} code.
+
+{\pythoncode{\
+
+\# \{\{\{ Create and load kernel module
+
+\
+
+\_pt\_mod\_0 = \_pt\_SourceModule("\#define bIdx(N) ((int)
+blockIdx.N)\textbackslash n\#define tIdx(N)
+
+((int) threadIdx.N)\textbackslash n\textbackslash nextern "C" \_\_global\_\_
+void \_\_launch\_bounds\_\_(16)
+
+knl\_indexlambda(double *\_\_restrict\_\_ out, double const *\_\_restrict\_\_
+\_in1)\textbackslash n\{\textbackslash n \ \{\textbackslash n \ \ \ int const
+ibatch = 0;\textbackslash n\textbackslash n \ \ \ out[4 * (tIdx(x) / 4) +
+tIdx(x) + -4 * (tIdx(x) / 4)] = 2.0 * \_in1[4 * (tIdx(x) / 4) + tIdx(x) + -4 *
+(tIdx(x) / 4)];\textbackslash n \ \}\textbackslash n\}")
+
+\
+
+\# \}\}\}
+
+\
+
+\# \{\{\{ Stage 1: Build and cache CUDAGraph
+
+\
+
+@cache
+
+def exec\_graph\_builder():
+
+\ \ \ \_pt\_g = \_pt\_drv.Graph()
+
+\ \ \ \_pt\_buffer\_acc = \{\}
+
+\ \ \ \_pt\_node\_acc = \{\}
+
+\ \ \ \_pt\_memalloc, \_pt\_array = \_pt\_g.add\_memalloc\_node(size=128,
+dependencies=[])
+
+\ \ \ \_pt\_kernel\_0 = \_pt\_g.add\_kernel\_node(\_pt\_array,
+139712027164672, func=\_pt\_mod\_0.get\_function('knl\_indexlambda'),
+block=(16, 1, 1), grid=(1, 1, 1), dependencies=[\_pt\_memalloc])
+
+\ \ \ \_pt\_buffer\_acc['\_pt\_array'] = \_pt\_array
+
+\ \ \ \_pt\_node\_acc['\_pt\_kernel\_0'] = \_pt\_kernel\_0
+
+\ \ \ \_pt\_g.add\_memfree\_node(\_pt\_array, [\_pt\_kernel\_0])
+
+\ \ \ return (\_pt\_g.get\_exec\_graph(), \_pt\_g, \_pt\_node\_acc,
+\_pt\_buffer\_acc)
+
+\
+
+\# \}\}\}
+
+\
+
+\# \{\{\{ Stage 2: Update execution graph
+
+\
+
+def \_pt\_kernel(allocator=cuda\_allocator, dev=cuda\_dev, *, \_pt\_data):
+
+\ \ \ \_pt\_result = \_pt\_gpuarray.GPUArray((4, 4), dtype='float64',
+allocator=allocator, dev=dev)
+
+\ \ \ \_pt\_exec\_g, \_pt\_g, \_pt\_node\_acc, \_pt\_buffer\_acc =
+exec\_graph\_builder()
+
+\ \ \
+\_pt\_exec\_g.batched\_set\_kernel\_node\_arguments(\{\_pt\_node\_acc['\_pt\_kernel\_0']:
+\_pt\_drv.KernelNodeParams(args=[\_pt\_result.gpudata, \_pt\_data.gpudata])\})
+
+\ \ \ \_pt\_exec\_g.launch()
+
+\ \ \ \_pt\_tmp = \{'2a': \_pt\_result\}
+
+\ \ \ return \_pt\_tmp
+
+\ \ \
+
+\# \}\}\}
+
+\ }}
+
+\subsection{Build \tmverbatim{CUDAGraph}}
+
+Alg 1 only gets executed only once during compilation with a
+{\tmem{$\Theta$(V+E)}} complexity for Alg 2
+
+{\noindent}\begin{tmparmod}{0pt}{0pt}{0em}%
+  \begin{tmparsep}{0em}%
+    {\tmstrong{Algorithm  1: DAG Discovery for building
+    \tmverbatim{CUDAGraph}}}{\smallskip}
+    
+    \begin{tmindent}
+      \
+      
+      {\tmstrong{Step 1}}: Run a topological sort on \tmverbatim{Pytato} IR
+      using Kahn's algorithm. This frontloads the {\tmem{sink}} nodes which
+      helps avoid array recomputations during DAG discovery. Initialize a
+      \tmverbatim{pycuda.Graph} object.
+      
+      \
+      
+      {\tmstrong{Step 2}}:
+      
+      {\tmstrong{for}} {\tmem{n}} $\epsilon$nodes in \tmverbatim{Pytato} IR
+      which only have incoming edges {\tmstrong{do}}
+      
+      \qquad{\tmname{GraphTraverse}}({\tmem{n}})
+      
+      {\tmstrong{done}}
+      
+      \
+      
+      {\tmstrong{Step 3}}: Instantiate \tmverbatim{pycuda.Graph} object and
+      cache the resultant \tmverbatim{pycuda.GraphExec} object to avoid
+      triggering traversals of the entire graph for subsequent launches.
+      
+      \ 
+    \end{tmindent}
+  \end{tmparsep}
+\end{tmparmod}{\medskip}
+
+{\noindent}\begin{tmparmod}{0pt}{0pt}{0em}%
+  \begin{tmparsep}{0em}%
+    {\tmstrong{Algorithm  2: Pytato IR Traversal}}{\smallskip}
+    
+    \begin{tmindent}
+      {\tmstrong{function}} {\tmname{GraphTraverse(}}{\tmem{n}})
+      
+      \qquad{\tmstrong{if}} {\tmem{n}} $\epsilon$ \{\tmverbatim{PlaceHolder},
+      \tmverbatim{DataWrapper}\} \{
+      \begin{tmindent}
+        \begin{tmindent}
+          \begin{tmindent}
+            \begin{itemize}
+              \item {\tmname{PlaceHolderMapper(}}{\tmem{n}})
+              
+              \item Link to user provided buffers or generate new buffers via
+              \tmverbatim{GPUArrays}.{\hspace*{\fill}}
+            \end{itemize}
+          \end{tmindent}
+        \end{tmindent}
+      \end{tmindent}
+      {\hspace{4em}}{\tmstrong{return}} $\{ n \}$
+      
+      \qquad\}
+      
+      \qquad{\tmstrong{else}} \{
+      \begin{tmindent}
+        \begin{tmindent}
+          \begin{tmindent}
+            \begin{itemize}
+              \item {\tmname{IndexLambdaMapper(}}{\tmem{n}})
+              
+              \item Generate kernel string and launch dimensions by plugging
+              \tmverbatim{IndexLambda} expression into
+              l\tmverbatim{p.make\_kernel}.
+              
+              \item Add kernel node with temporary buffer arguments and
+              corresponding result memalloc node to
+              \tmverbatim{pycuda}.\tmverbatim{Graph} object with dependencies
+              sourced from \tmverbatim{Pytato} IR.
+              
+              \item Update \tmverbatim{Pytato} IR with termporary buffer
+              information.{\hspace*{\fill}}
+            \end{itemize}
+          \end{tmindent}
+        \end{tmindent}
+      \end{tmindent}
+      {\hspace{3em}}{\tmem{n\_deps}} $\leftarrow$ \{\}
+      
+      {\hspace{3em}}{\tmstrong{for}} c $\epsilon$ {\tmem{n}} dependencies
+      sourced from \tmverbatim{Pytato} IR {\tmstrong{do}}
+      
+      {\hspace{5em}}{\tmem{c\_deps}} $\leftarrow$
+      {\tmname{GraphTraverse(}}{\tmem{c}})
+      
+      {\hspace{5em}}{\tmem{n\_deps}} $\leftarrow$ {\tmem{n\_deps}}
+      $\bigcup${\tmem{c\_deps}}
+      
+      {\hspace{3em}}{\tmstrong{done}}
+      
+      {\hspace{3em}}{\tmstrong{return}} {\tmem{n\_deps}}
+      
+      \qquad\}
+      
+      {\tmstrong{end function}}
+      
+      \ 
+    \end{tmindent}
+  \end{tmparsep}
+\end{tmparmod}{\medskip}
+
+\subsection{Update \tmverbatim{CUDAGraphExec}}
+
+Algorithm 3 gets executed for every graph launch.
+
+{\noindent}\begin{tmparmod}{0pt}{0pt}{0em}%
+  \begin{tmparsep}{0em}%
+    {\tmstrong{Algorithm  3: Buffer update in
+    \tmverbatim{CUDAGraphExec}}}{\smallskip}
+    
+    \begin{tmindent}
+      {\tmstrong{}}{\tmstrong{for}} n $\epsilon$ kernel nodes in\tmverbatim{
+      pycuda.GraphExec} with temporary buffers {\tmstrong{do}}
+      \begin{itemizedot}
+        \begin{tmindent}
+          \item Replace temporary buffers with allocated/linked buffers from
+          corresponding \tmverbatim{PlaceHolder} nodes.
+        \end{tmindent}
+      \end{itemizedot}
+      {\tmstrong{done}}
+    \end{tmindent}
+  \end{tmparsep}
+\end{tmparmod}{\medskip}
+
+\
+
+\
+
+\
+
+\
+
+\section{RESULTS}
+
+We evaluate the performance of our framework on three end-to-end DG-FEM
+operators with real-world applications on NVIDIA Titan V. We evaluate these
+operators on 3D meshes with tetrahedral cells and evaluate our speedup against
+\tmverbatim{PyOpenCL} which supports sequential stream execution. Table 2.
+summarizes our experimental parameters.
+
+\
+
+\begin{table}[h]
+  {\noindent}\begin{tabularx}{1.0\textwidth}{@{}X@{}@{}X@{}@{}X@{}}
+    \  & \  & \ \\
+    {\tmstrong{\begin{tabular}{p{12.0cm}}
+      Equation
+    \end{tabular}}} & {\tmstrong{Polynomial Degree}} & {\tmstrong{No. of mesh
+    elements}}\\
+    \  & \  & \ \\
+    {\tmem{3D Wave}} & 1 & 1.25 $\times$ 10$^5$\\
+    \  & 2 & 5.0 $\times$ 10$^4$\\
+    \  & 3 & 2.5 $\times$ 10$^4$\\
+    \  & 4 & 1.4 $\times$ 10$^4$\\
+    \  & \  & \ 
+  \end{tabularx}
+  \caption{Experimental parameters for DG-FEM operators}
+\end{table}
+
+\begin{figure}[h]
+  \raisebox{-7.52027684019118e-4\height}{\includegraphics[width=14.8909550045914cm,height=11.164010232192cm]{cudagraph_thesis-5.pdf}}
+  \caption{Performance of our framework (\tmverbatim{Pytato-PyCUDA-CUDAGraph})
+  over sequentual stream execution (\tmverbatim{PyOpenCL})}
+\end{figure}
+
+\
+
+\
+
+\
+
+\
+
+\
+
+\
+
+\
+
+\
+
+\
+
+\
+
+\
+
+\
+
+\end{document}

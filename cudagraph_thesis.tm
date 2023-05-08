@@ -227,15 +227,20 @@
   but requires to wrangle with conconcurrency details through events and
   streams.
 
-  <em|Graph>: <compound|verbatim|JAX> optimizes GPU peformance by translating
-  <em|high-level traces> into XL HLO and then performing
-  vectorization/parallelization, automatic differentiation, and <verbatim|JIT
-  >compilation. Deep learning symbolic mathematical libraries such as
-  <verbatim|TensorFlow> and <verbatim|Pytorch> allow neural networks to be
-  specified as DAGs along which data is transformed. Just like
-  <verbatim|CUDAGraphs>, in <verbatim|TensorFlow>, computational DAGs are
-  defined statically so that their compilation and execution yield maximum
-  performance. <verbatim|PyTorch> on the other hand offers more control at
+  Although capturing all the operations on a stream leads to a terse
+  application code, staging computations within a user-code with interleaving
+  in-graph and out-of-graph operations cannot be expressed. This leads to
+  multiple DAGs which can potentially trigger recomputations for each graph
+  launch.
+
+  <em|Delayed Execution model>: <compound|verbatim|JAX> optimizes GPU
+  peformance by translating <em|high-level traces> into XL HLO and then
+  performing vectorization/parallelization and <verbatim|JIT >compilation.
+  Deep learning symbolic mathematical libraries such as <verbatim|TensorFlow>
+  and <verbatim|Pytorch> allow neural networks to be specified as DAGs along
+  which data is transformed. Just like <verbatim|CUDAGraphs>, in
+  <verbatim|TensorFlow>, computational DAGs are defined statically to achieve
+  close to . <verbatim|PyTorch> on the other hand offers more control at
   runtime by allowing the modification of executing nodes facilitating the
   implementation of sophosticated training routines.
 
@@ -416,10 +421,11 @@
   methods, deep learning, computational statistics etc.) where the higher
   dimensional vizualization of data is close to the mathematical notation.
 
-  Pytato's IR encodes user defined array computations as a DAG where nodess
-  correspond to array operations and edges representing dependencies between
-  inputs/outputs of these operations. We map the set of nodes provided by
-  Pytato's IR onto the following two node to simplify code generation:
+  Pytato offers an IR which encodes user defined array computations as a DAG
+  where nodes correspond to array operations and edges representing
+  dependencies between inputs/outputs of these operations. We map the set of
+  nodes provided by Pytato's IR onto the following two node to simplify code
+  generation:
 
   1. <em|Placeholder>: A named abstract array whose shape and dtype is known
   with data supplied during runtime. This permits the automated gathering of
@@ -434,7 +440,9 @@
   Here's a simple example demonstrating <verbatim|Pytato> usage
 
   <\python-code>
-    # Create Placeholder node for storing array description
+    \;
+
+    # CreatePlaceholder node for storing array description
 
     \;
 
@@ -568,7 +576,7 @@
     \;
   </python-code>
 
-  <subsection|Build <verbatim|CUDAGraph>>
+  <subsection|Stage 1: Build <verbatim|CUDAGraph>>
 
   Alg 1 only gets executed only once during compilation with a
   <em|<math|\<Theta\>>(V+E)> complexity for Alg 2\ 
@@ -668,7 +676,7 @@
     \;
   </named-algorithm>
 
-  <subsection|Update <verbatim|CUDAGraphExec>>
+  <subsection|Stage 2: Update <verbatim|CUDAGraphExec>>
 
   Algorithm 3 gets executed for every graph launch.
 
@@ -758,22 +766,6 @@
     Performance of our framework (<verbatim|Pytato-PyCUDA-CUDAGraph>) over
     sequentual stream execution (<verbatim|PyOpenCL>)
   </big-figure>
-
-  \;
-
-  \;
-
-  \;
-
-  \;
-
-  \;
-
-  \;
-
-  \;
-
-  \;
 
   \;
 
@@ -881,12 +873,12 @@
       <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
       <no-break><pageref|auto-12>
 
-      <with|par-left|<quote|1tab>|4.1.<space|2spc>Build
+      <with|par-left|<quote|1tab>|4.1.<space|2spc>Stage 1: Build
       <with|font-family|<quote|tt>|language|<quote|verbatim>|CUDAGraph>
       <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
       <no-break><pageref|auto-13>>
 
-      <with|par-left|<quote|1tab>|4.2.<space|2spc>Update
+      <with|par-left|<quote|1tab>|4.2.<space|2spc>Stage 2: Update
       <with|font-family|<quote|tt>|language|<quote|verbatim>|CUDAGraphExec>
       <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
       <no-break><pageref|auto-14>>

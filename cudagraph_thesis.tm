@@ -32,7 +32,7 @@
   \;
 
   <\doc-title>
-    Efficient Execution of DG-FEM workloads on GPUs via <verbatim|CUDAGraphs>
+    Efficient Execution of DG-FEM workloads on GPUs via CUDAGraphs
   </doc-title>
 
   <\doc-author>
@@ -185,73 +185,72 @@
 
   <section|Related work>
 
-  The literature on task-based array programming can be classified roughly
-  according to their choice of task granularity.
+  We provide an overview of the literature on dataflow based array
+  programming which can be classified roughly according to their choice of
+  task granularity.
 
   <em|Function>: Castro et give an overview of the current task-based
-  <verbatim|Python> computing landscape by mentioning several libraries that
-  rely on <em|decorators>. A decorator is an instruction set before the
-  definition of a function. The decorator function transforms the user
-  function (if applicable) into a parallelization-friendly version. Libraries
-  such as <verbatim|PyCOMPs>, <verbatim|Pygion>, <verbatim|PyKoKKos> and
-  <verbatim|Legion> make use of this core principle to accelarate
-  <em|vanilla> <verbatim|Python> code. <verbatim|PyCOMPs> and
-  <verbatim|Pygion> both rely on <verbatim|@task> decorator to build a task
-  dependency graph and define the order of execution. <verbatim|PyKoKKos>
-  ports into the <verbatim|KoKKos> API and passes the <verbatim|@pk.workunit>
-  decorator into the <verbatim|parallel_for()> function. <verbatim|Legion>
-  uses a data-centric programming model which relies on <em|software
-  out-of-order processor> (SOOP), for scheduling tasks which takes locality
-  and independence properties captured by logical regions while making
-  scheduling decisions.
+  <verbatim|Python> computing landscape by mentioning <verbatim|PyCOMPs>,
+  <verbatim|Pygion>, <verbatim|PyKoKKos> and <verbatim|Legion> that rely on
+  <em|decorators>. A decorator is an instruction set before the definition of
+  a function. The decorator function transforms the user function (if
+  applicable) into a parallelization-friendly version. PyCOMPs and Pygion
+  both rely on <verbatim|@task decorato>r to dynamically add tasks to the
+  data dependency graph. The scheduling policy is <em|locality-aware> where
+  the runtime system computes a score for all of the available resources and
+  chooses the one with the highest score. The score is the number of task
+  input parameters that are already present on that resource, thus minimizing
+  delays between task executions. On a similar note, <verbatim|Legion> uses a
+  data-centric programming model which relies on <em|software out-of-order
+  processor> (SOOP), for scheduling tasks which takes locality and
+  independence properties captured by logical regions while making scheduling
+  decisions.
 
   In <verbatim|Jug>, arguments take values or outputs of another tasks and
   parallelization is achieved by running more than one <verbatim|Jug>
   processes for distributing the tasks. In <verbatim|Pydron>, decorated
   functions are first translated into an intermediate representation and then
-  analyzed by a scheduler which updates the execution graph as each task is
+  analyzed by a scheduler which changes the execution graph as each task is
   finished.
 
   Since all of these frameworks rely on explicit taks declarations, they are
-  not able to realise the concurrency available across array operations.
+  not yet able to realise the concurrency available across array operations.
 
   <em|Stream>: <verbatim|CuPy> serves as a drop-in replacement to
-  <verbatim|Numpy> and uses NVIDIA's in-house CUDA frameworks such
-  as<verbatim| cuBLAS>, <verbatim|cuDNN> and <verbatim|cuSPARSE> to
-  accelerate its performance. <verbatim|Julia> GPU programming models
-  use<verbatim| CUDA.jl> to provide a high level mechanics to define
-  multidimenstional arrays (<verbatim|CUArray>). Both <verbatim|CuPy> and
-  <verbatim|Julia >offer interfaces for <em|implcit> graph construction which
-  <em|captures> a <verbatim|CUDAGraph> using existing stream-based APIs.
-  Implicit <verbatim|CUDAGraph> construction is more flexible and general,
-  but requires to wrangle with conconcurrency details through events and
-  streams.
-
-  Although capturing all the operations on a stream leads to a terse
-  application code, staging computations within a user-code with interleaving
-  in-graph and out-of-graph operations cannot be expressed. This leads to
-  multiple DAGs which can potentially trigger recomputations for each graph
-  launch.
+  <verbatim|Numpy> and support NVIDIA's in-house CUDA frameworks such
+  as<verbatim| cuBLAS>, <verbatim|cuDNN> and <verbatim|cuSPARSE> .
+  <verbatim|Julia> GPU programming models use<verbatim| CUDA.jl> to provide
+  high level mechanics to define multidimenstional arrays
+  (<verbatim|CUArray>). Both <verbatim|CuPy> and <verbatim|Julia >offer
+  interfaces for <em|implcit> graph construction which <em|captures> a
+  <verbatim|CUDAGraph> using existing stream-based APIs. Although capturing
+  all the operations on a stream leads to terse application code, staging
+  computations within a user-code with interleaving in-graph and out-of-graph
+  operations cannot be expressed. This can lead to multiple DAGs which can
+  potentially trigger recomputations for every graph launch.
 
   <em|Delayed Execution model>: <compound|verbatim|JAX> optimizes GPU
   peformance by translating <em|high-level traces> into XL HLO and then
   performing vectorization/parallelization and <verbatim|JIT >compilation.
-  Deep learning symbolic mathematical libraries such as <verbatim|TensorFlow>
-  and <verbatim|Pytorch> allow neural networks to be specified as DAGs along
-  which data is transformed. Just like <verbatim|CUDAGraphs>, in
+  Deep learning (DL) symbolic mathematical libraries such as
+  <verbatim|TensorFlow> and <verbatim|Pytorch> allow neural networks to be
+  specified as DAGs along which data is transformed. Current DL frameworks
+  conduct GPU task scheduling during <em|run time>. Tensorflow represents a
+  neural network as a computation graph of DL operators, and schedule athe
+  GPU tasks of an operator at run time once the operator's dependencies are
+  met. Meanwhile, for PyTorch , GPU tasks are scheduled at run time as Python
+  code is interpreted line by line. Just like <verbatim|CUDAGraphs>, in
   <verbatim|TensorFlow>, computational DAGs are defined statically to achieve
-  close to . <verbatim|PyTorch> on the other hand offers more control at
-  runtime by allowing the modification of executing nodes facilitating the
-  implementation of sophosticated training routines.
+  close to roofline performance for DL applications. <verbatim|PyTorch> on
+  the other hand offers more control at runtime by allowing the modification
+  of executing nodes facilitating the implementation of sophosticated
+  training routines.
 
-  <em|Kernel>: <verbatim|StarPU> supports a task-based programming model by
-  scheduling tasks efficiently using well-known generic dynamic and task
-  graph scheduling policies from the literature, and optimizing data
-  transfers using prefetching and overallaping. Each StarPU task describes
-  the computation kernel, possible implementations on different architectures
-  (CPUs/GPUs), what data is being accessed and how its accessed during
-  comptuation (read/write mode). Task dependencies are inferred from data
-  dependencies.
+  <em|Kernel>: Both <verbatim|StarPU> and <verbatim|PARSEC> provide
+  execellent support for heterogenous hardware on distributed systems. Both
+  emphasize GPU contexts, data prefetching and have heterogenous data-aware
+  scheduling policies based on HEFT heuristic. <verbatim|ParSEC> in
+  particular uses lightweight tasks driven by CUDA events.
 
   <section|OVERVIEW>
 
@@ -782,6 +781,7 @@
     <associate|font-base-size|11>
     <associate|font-family|rm>
     <associate|math-font|roman>
+    <associate|page-first|1>
     <associate|page-medium|paper>
     <associate|page-screen-margin|false>
   </collection>

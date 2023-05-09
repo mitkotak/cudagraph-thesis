@@ -69,6 +69,12 @@
 
   \;
 
+  \;
+
+  \;
+
+  \;
+
   <abstract-data|<abstract|Array programming paradigm offers routines to
   express the computation cleanly for for a wide variety of scientific
   computing applications (Finite Element Method, Stencil Codes, Image
@@ -123,15 +129,20 @@
 
   \;
 
+  \;
+
+  \;
+
   <section|INTRODUCTION>
 
   Array programming is a fundamental computation model that supports a wide
   variety of features, including array slicing and arbitary element-wise,
   reduction and broadcast operators allowing the interface to correspond
-  closely to the mathematical needs of the applications. <verbatim|PyCUDA>
-  and several other array-based frameworks serve as drop-in replacements for
-  accelarating <verbatim|Numpy-like> operations on GPUs. While abstractions
-  like <verbatim|GPUArray>'s offer a very convenient abstraction for doing
+  closely to the mathematical needs of the applications.
+  <verbatim|PyCUDA><cite|kloeckner_pycuda_2012> and several other array-based
+  frameworks serve as drop-in replacements for accelarating
+  <verbatim|Numpy-like> operations on GPUs. While abstractions like
+  <verbatim|GPUArray>'s offer a very convenient abstraction for doing
   \Pstream\Q computing on these arrays, they are not yet able to
   automatically schedule and manage overlapping array operations onto
   multiple streams. The concurrency available in the dependency pattern for
@@ -173,7 +184,8 @@
 
   We formulate our system by buiding a <verbatim|CUDAGraph>-based
   <verbatim|PyCUDA> target for <verbatim|Pytato's> IR which captures the
-  user-defined DAG. The key technical contributions of our system involve:
+  user-defined DAG. The process is <em|transparent>. The key technical
+  contributions of our system involve:
 
   <\enumerate>
     <item>Extending <samp|<verbatim|PyCUDA>> to allow calls to the
@@ -189,12 +201,14 @@
   programming which can be classified roughly according to their choice of
   task granularity.
 
-  <em|Function>: Castro et give an overview of the current task-based
-  <verbatim|Python> computing landscape by mentioning <verbatim|PyCOMPs>,
-  <verbatim|Pygion>, <verbatim|PyKoKKos> and <verbatim|Legion> that rely on
-  <em|decorators>. A decorator is an instruction set before the definition of
-  a function. The decorator function transforms the user function (if
-  applicable) into a parallelization-friendly version. PyCOMPs and Pygion
+  <em|Function>: Castro<cite|Castro> gives an overview of the current
+  task-based <verbatim|Python> computing landscape by mentioning
+  <verbatim|PyCOMPs><cite|Tejedor_2016>, <verbatim|Pygion><cite|Slaughter_2019>,
+  <verbatim|PyKoKKos><cite|Pykokkos> and <verbatim|Legion>
+  <cite|Bauer2014LegionPD> that rely on <em|decorators>. A decorator is an
+  instruction set before the definition of a function. The decorator function
+  transforms the user function (if applicable) into a
+  parallelization-friendly version. <verbatim|PyCOMPs> and <verbatim|Pygion>
   both rely on <verbatim|@task decorato>r to dynamically add tasks to the
   data dependency graph. The scheduling policy is <em|locality-aware> where
   the runtime system computes a score for all of the available resources and
@@ -216,41 +230,44 @@
   Since all of these frameworks rely on explicit taks declarations, they are
   not yet able to realise the concurrency available across array operations.
 
-  <em|Stream>: <verbatim|CuPy> serves as a drop-in replacement to
-  <verbatim|Numpy> and support NVIDIA's in-house CUDA frameworks such
-  as<verbatim| cuBLAS>, <verbatim|cuDNN> and <verbatim|cuSPARSE> .
-  <verbatim|Julia> GPU programming models use<verbatim| CUDA.jl> to provide
-  high level mechanics to define multidimenstional arrays
-  (<verbatim|CUArray>). Both <verbatim|CuPy> and <verbatim|Julia >offer
-  interfaces for <em|implcit> graph construction which <em|captures> a
-  <verbatim|CUDAGraph> using existing stream-based APIs. Although capturing
-  all the operations on a stream leads to terse application code, staging
-  computations within a user-code with interleaving in-graph and out-of-graph
-  operations cannot be expressed. This can lead to multiple DAGs which can
-  potentially trigger recomputations for every graph launch.
+  <em|Stream>: <verbatim|CuPy><cite|okuta2017numpycompatible> serves as a
+  drop-in replacement to <verbatim|Numpy> and support NVIDIA's in-house CUDA
+  frameworks such as<verbatim| cuBLAS>, <verbatim|cuDNN> and
+  <verbatim|cuSPARSE>. <verbatim|Julia><cite|bezanson2012julia> GPU
+  programming models use<verbatim| CUDA.jl> to provide high level mechanics
+  to define multidimenstional arrays (<verbatim|CUArray>). Both
+  <verbatim|CuPy> and <verbatim|Julia >offer interfaces for <em|implcit>
+  graph construction which <em|captures> a <verbatim|CUDAGraph> using
+  existing stream-based APIs. Although capturing all the operations on a
+  stream leads to terse application code, staging computations within a
+  user-code with interleaving in-graph and out-of-graph operations cannot be
+  expressed. This can lead to multiple DAGs which can potentially trigger
+  recomputations for every graph launch.
 
-  <em|Delayed Execution model>: <compound|verbatim|JAX> optimizes GPU
-  peformance by translating <em|high-level traces> into XL HLO and then
-  performing vectorization/parallelization and <verbatim|JIT >compilation.
-  Deep learning (DL) symbolic mathematical libraries such as
-  <verbatim|TensorFlow> and <verbatim|Pytorch> allow neural networks to be
-  specified as DAGs along which data is transformed. Current DL frameworks
-  conduct GPU task scheduling during <em|run time>. Tensorflow represents a
-  neural network as a computation graph of DL operators, and schedule athe
-  GPU tasks of an operator at run time once the operator's dependencies are
-  met. Meanwhile, for PyTorch , GPU tasks are scheduled at run time as Python
-  code is interpreted line by line. Just like <verbatim|CUDAGraphs>, in
+  <em|Delayed Execution model>: <compound|verbatim|JAX><cite|jax2018github>
+  optimizes GPU peformance by translating <em|high-level traces> into
+  XLA<cite|xla> HLO and then performing vectorization/parallelization and
+  <verbatim|JIT >compilation. Deep learning (DL) symbolic mathematical
+  libraries such as <verbatim|TensorFlow><cite|Abadi> and
+  <verbatim|Pytorch><cite|Paszke> allow neural networks to be specified as
+  DAGs along which data is transformed. Current DL frameworks conduct GPU
+  task scheduling during <em|run time>. Tensorflow represents a neural
+  network as a computation graph of DL operators, and schedule athe GPU tasks
+  of an operator at run time once the operator's dependencies are met.
+  Meanwhile, for PyTorch , GPU tasks are scheduled at run time as Python code
+  is interpreted line by line. Just like <verbatim|CUDAGraphs>, in
   <verbatim|TensorFlow>, computational DAGs are defined statically to achieve
   close to roofline performance for DL applications. <verbatim|PyTorch> on
   the other hand offers more control at runtime by allowing the modification
   of executing nodes facilitating the implementation of sophosticated
   training routines.
 
-  <em|Kernel>: Both <verbatim|StarPU> and <verbatim|PARSEC> provide
-  execellent support for heterogenous hardware on distributed systems. Both
-  emphasize GPU contexts, data prefetching and have heterogenous data-aware
-  scheduling policies based on HEFT heuristic. <verbatim|ParSEC> in
-  particular uses lightweight tasks driven by CUDA events.
+  <em|Kernel>: Both <verbatim|StarPU><cite|augonnet> and
+  <verbatim|PARSEC><cite|parsec> provide execellent support for heterogenous
+  hardware on distributed systems. Both emphasize GPU contexts, data
+  prefetching and have heterogenous data-aware scheduling policies based on
+  HEFT<cite|heft> heuristic. <verbatim|ParSEC> in particular uses lightweight
+  tasks driven by CUDA events.
 
   <section|OVERVIEW>
 
@@ -380,9 +397,10 @@
 
   <subsection|<verbatim|Loopy>>
 
-  Loopy is <verbatim|a Python>-based transformation toolkit to generate
-  transformed kernels. We make use of the following components in our
-  pipeline to generate performance tuned <verbatim|CUDA> kernels:
+  <verbatim|Loopy><cite|kloeckner_loopy_2014> is <verbatim|a Python>-based
+  transformation toolkit to generate transformed kernels. We make use of the
+  following components in our pipeline to generate performance tuned
+  <verbatim|CUDA> kernels:
 
   1. <em|Loop Domains>: \ The upper and lower bounds of the result array's
   memory access pattern in the <verbatim|OpenCL> format sourced from the
@@ -412,19 +430,19 @@
 
   <subsection|<verbatim|Pytato>>
 
-  <verbatim|Pytato> is a lazy-evaluation programming based <verbatim|Python>
-  package that offers a subset of <verbatim|Numpy> operations for
-  manipulating multidimensional arrays. This provides the convenience of
-  realzing one-dimensional layout of memory buffer for large scale
-  multidimensional scientific computing workloads (PDE-based numerical
+  <verbatim|Pytato><cite|lazy> is a lazy-evaluation programming based
+  <verbatim|Python> package that offers a subset of <verbatim|Numpy>
+  operations for manipulating multidimensional arrays. This provides the
+  convenience of realzing one-dimensional layout of memory buffer for large
+  scale multidimensional scientific computing workloads (PDE-based numerical
   methods, deep learning, computational statistics etc.) where the higher
   dimensional vizualization of data is close to the mathematical notation.
 
-  Pytato offers an IR which encodes user defined array computations as a DAG
-  where nodes correspond to array operations and edges representing
-  dependencies between inputs/outputs of these operations. We map the set of
-  nodes provided by Pytato's IR onto the following two node to simplify code
-  generation:
+  <verbatim|Pytato> offers an IR which encodes user defined array
+  computations as a DAG where nodes correspond to array operations and edges
+  representing dependencies between inputs/outputs of these operations. We
+  map the set of nodes provided by <verbatim|Pytato's> IR onto the following
+  two node to simplify code generation:
 
   1. <em|Placeholder>: A named abstract array whose shape and dtype is known
   with data supplied during runtime. This permits the automated gathering of
@@ -677,7 +695,7 @@
 
   <subsection|Stage 2: Update <verbatim|CUDAGraphExec>>
 
-  Algorithm 3 gets executed for every graph launch.
+  Alg 3. gets executed for every graph launch.
 
   <\named-algorithm|3: Buffer update in <verbatim|CUDAGraphExec>>
     <strong|><strong|for> n <math|\<epsilon\>> kernel nodes in<verbatim|
@@ -703,11 +721,12 @@
 
   <section|RESULTS>
 
-  We evaluate the performance of our framework on three end-to-end DG-FEM
+  We demonstrate the performance of our framework on three end-to-end DG-FEM
   operators with real-world applications on NVIDIA Titan V. We evaluate these
   operators on 3D meshes with tetrahedral cells and evaluate our speedup
-  against <verbatim|PyOpenCL> which supports sequential stream execution.
-  Table 2. summarizes our experimental parameters.
+  against <verbatim|PyOpenCL><cite|kloeckner_pyopencl_2012> which supports
+  sequential stream execution. Table 2. summarizes our experimental
+  parameters.
 
   \;
 
@@ -770,6 +789,147 @@
 
   \;
 
+  <section|CONCLUSION>
+
+  \;
+
+  In this work we implement an array framework powered by a task-graph based
+  backend for realizing concurrency across array operations. This enables
+  domain experts to write array-based DG-FEM code that can be efficiently
+  executed on GPUs through on multiple streams and low kernel launch
+  latencies. We demonstrate the performance of our system on Wave, Euler and
+  Navier Stokes Opertators and recorded a speedup of upto X over sequential
+  stream execution.
+
+  \;
+
+  Some future extensions of this work involve (1) creating a performance
+  model for the graph scheduling algorithm through a series of
+  microbenchmarks, (2) providing a mechanism for hand-tuning <verbatim|Loopy>
+  kernels.
+
+  <\bibliography|bib|tm-plain|bibtex>
+    <\bib-list|18>
+      <bibitem*|1><label|bib-Abadi>Mart<math|<wide|<text|\Y>|\<acute\>>>n
+      Abadi, Ashish Agarwal, Paul Barham, Eugene Brevdo, Zhifeng Chen, Craig
+      Citro, Greg<nbsp>S.<nbsp>Corrado, Andy Davis, Jeffrey Dean, Matthieu
+      Devin, Sanjay Ghemawat, Ian Goodfellow, Andrew Harp, Geoffrey Irving,
+      Michael Isard, Yangqing Jia, Rafal Jozefowicz, Lukasz Kaiser, Manjunath
+      Kudlur, Josh Levenberg, Dan Mane, Rajat Monga, Sherry Moore, Derek
+      Murray, Chris Olah, Mike Schuster, Jonathon Shlens, Benoit Steiner,
+      Ilya Sutskever, Kunal Talwar, Paul Tucker, Vincent Vanhoucke, Vijay
+      Vasudevan, Fernanda Viegas, Oriol Vinyals, Pete Warden, Martin
+      Wattenberg, Martin Wicke, Yuan Yu<localize|, and >Xiaoqiang Zheng.
+      <newblock>Tensorflow: large-scale machine learning on heterogeneous
+      distributed systems. <newblock>03 2016.<newblock>
+
+      <bibitem*|2><label|bib-Pykokkos>Nader Al Awar, Neil Mehta, Steven Zhu,
+      George Biros<localize|, and >Milos Gligoric. <newblock>Pykokkos:
+      performance portable kernels in python. <newblock><localize|In
+      ><with|font-shape|italic|2022 IEEE/ACM 44th International Conference on
+      Software Engineering: Companion Proceedings (ICSE-Companion)>,
+      <localize|pages >164\U167. 2022.<newblock>
+
+      <bibitem*|3><label|bib-augonnet>Cédric Augonnet, Samuel Thibault,
+      Raymond Namyst<localize|, and >Pierre-André Wacrenier.
+      <newblock>StarPU: a unified platform for task scheduling on
+      heterogeneous multicore architectures.
+      <newblock><with|font-shape|italic|Concurrency and Computation: Practice
+      and Experience>, 23(2):187\U198, 2011.<newblock>
+
+      <bibitem*|4><label|bib-Bauer2014LegionPD>Michael Bauer.
+      <newblock>Legion: programming distributed heterogeneous architectures
+      with logical regions. <newblock>2014.<newblock>
+
+      <bibitem*|5><label|bib-bezanson2012julia>Jeff Bezanson, Stefan
+      Karpinski, Viral<nbsp>B.<nbsp>Shah<localize|, and >Alan Edelman.
+      <newblock>Julia: a fast dynamic language for technical computing.
+      <newblock>2012.<newblock>
+
+      <bibitem*|6><label|bib-parsec>George Bosilca, Aurelien Bouteiller,
+      Anthony Danalis, Mathieu Faverge, Thomas Herault<localize|, and
+      >Jack<nbsp>J.<nbsp>Dongarra. <newblock>Parsec: exploiting heterogeneity
+      to enhance scalability. <newblock><with|font-shape|italic|<tformat|<table|<row|<cell|Computing
+      in Science>|<cell|Engineering>>>>>, 15(6):36\U45, 2013.<newblock>
+
+      <bibitem*|7><label|bib-jax2018github>James Bradbury, Roy Frostig, Peter
+      Hawkins, Matthew<nbsp>James Johnson, Chris Leary, Dougal Maclaurin,
+      George Necula, Adam Paszke, Jake VanderPlas, Skye
+      Wanderman-Milne<localize|, and >Qiao Zhang. <newblock>JAX: composable
+      transformations of Python+NumPy programs. <newblock>2018.<newblock>
+
+      <bibitem*|8><label|bib-Castro>Oscar Castro, Pierrick Bruneau,
+      Jean-Sébastien Sottet<localize|, and >Dario Torregrossa.
+      <newblock>Landscape of high-performance python to develop data science
+      and machine learning applications. <newblock>02 2023.<newblock>
+
+      <bibitem*|9><label|bib-kloeckner_loopy_2014>Andreas Klöckner.
+      <newblock>Loo.py: transformation-based code<nbsp>generation for GPUs
+      and CPUs. <newblock><localize|In ><with|font-shape|italic|Proceedings
+      of ARRAY `14: ACM SIGPLAN Workshop on Libraries, Languages, and
+      Compilers for Array Programming>. Edinburgh, Scotland., 2014.
+      Association for Computing Machinery.<newblock>
+
+      <bibitem*|10><label|bib-kloeckner_pyopencl_2012>Andreas Klöckner,
+      Nicolas Pinto, Yunsup Lee, B.<nbsp>Catanzaro, Paul Ivanov<localize|,
+      and >Ahmed Fasih. <newblock>PyCUDA and PyOpenCL: A Scripting-Based
+      Approach to GPU Run-Time Code Generation.
+      <newblock><with|font-shape|italic|Parallel Computing>, 38(3):157\U174,
+      2012.<newblock>
+
+      <bibitem*|11><label|bib-kloeckner_pycuda_2012>Andreas Klöckner, Nicolas
+      Pinto, Yunsup Lee, B.<nbsp>Catanzaro, Paul Ivanov<localize|, and >Ahmed
+      Fasih. <newblock>PyCUDA and PyOpenCL: A Scripting-Based Approach to GPU
+      Run-Time Code Generation. <newblock><with|font-shape|italic|Parallel
+      Computing>, 38(3):157\U174, 2012.<newblock>
+
+      <bibitem*|12><label|bib-lazy>Kaushik Kulkarni<localize| and >Andreas
+      Klöckner. <newblock>Separating concerns in computational science
+      without domain specific languages. <newblock>2023.<newblock>
+
+      <bibitem*|13><label|bib-okuta2017numpycompatible>Ryosuke Okuta, Yuya
+      Unno, Daisuke Nishino, Shohei Hido<localize|, and >Crissman Loomis.
+      <newblock>Cupy: a numpy-compatible library for nvidia gpu calculations.
+      <newblock><localize|In ><with|font-shape|italic|Proceedings of Workshop
+      on Machine Learning Systems (LearningSys) in The Thirty-first Annual
+      Conference on Neural Information Processing Systems (NIPS)>.
+      2017.<newblock>
+
+      <bibitem*|14><label|bib-Paszke>Adam Paszke, Sam Gross, Francisco Massa,
+      Adam Lerer, James Bradbury, Gregory Chanan, Trevor Killeen, Zeming Lin,
+      Natalia Gimelshein, Luca Antiga, Alban Desmaison, Andreas Köpf, Edward
+      Yang, Zach DeVito, Martin Raison, Alykhan Tejani, Sasank Chilamkurthy,
+      Benoit Steiner, Lu Fang, Junjie Bai<localize|, and >Soumith Chintala.
+      <newblock>Pytorch: an imperative style, high-performance deep learning
+      library. <newblock>12 2019.<newblock>
+
+      <bibitem*|15><label|bib-xla>Amit Sabne. <newblock>Xla : compiling
+      machine learning for peak performance. <newblock>2020.<newblock>
+
+      <bibitem*|16><label|bib-Slaughter_2019>Elliott Slaughter<localize| and
+      >Alex Aiken. <newblock>Pygion: flexible, scalable task-based
+      parallelism with python. <newblock><localize|In
+      ><with|font-shape|italic|2019 IEEE/ACM Parallel Applications Workshop,
+      Alternatives To MPI (PAW-ATM)>. IEEE, nov 2019.<newblock>
+
+      <bibitem*|17><label|bib-Tejedor_2016>Enric Tejedor, Yolanda Becerra,
+      Guillem Alomar, Anna Queralt, Rosa<nbsp>M Badia, Jordi Torres, Toni
+      Cortes<localize|, and >Jesús Labarta. <newblock>PyCOMPSs: parallel
+      computational workflows in python. <newblock><with|font-shape|italic|The
+      International Journal of High Performance Computing Applications>,
+      31(1):66\U82, jul 2016.<newblock>
+
+      <bibitem*|18><label|bib-heft>H.<nbsp>Topcuoglu,
+      S.<nbsp>Hariri<localize|, and >Min-You Wu.
+      <newblock>Performance-effective and low-complexity task scheduling for
+      heterogeneous computing. <newblock><with|font-shape|italic|IEEE
+      Transactions on Parallel and Distributed Systems>, 13(3):260\U274,
+      2002.<newblock>
+    </bib-list>
+  </bibliography>
+
+  \;
+
   \;
 
   \;
@@ -798,6 +958,8 @@
     <associate|auto-15|<tuple|5|12>>
     <associate|auto-16|<tuple|2|12>>
     <associate|auto-17|<tuple|4|12>>
+    <associate|auto-18|<tuple|6|13>>
+    <associate|auto-19|<tuple|6|?>>
     <associate|auto-2|<tuple|1|4>>
     <associate|auto-3|<tuple|1|4>>
     <associate|auto-4|<tuple|2|5>>
@@ -806,11 +968,66 @@
     <associate|auto-7|<tuple|3.1|6>>
     <associate|auto-8|<tuple|1|7>>
     <associate|auto-9|<tuple|3.2|8>>
+    <associate|bib-Abadi|<tuple|1|13>>
+    <associate|bib-Bauer2014LegionPD|<tuple|4|13>>
+    <associate|bib-Castro|<tuple|8|13>>
+    <associate|bib-Paszke|<tuple|14|13>>
+    <associate|bib-Pykokkos|<tuple|2|13>>
+    <associate|bib-Slaughter_2019|<tuple|16|13>>
+    <associate|bib-Tejedor_2016|<tuple|17|13>>
+    <associate|bib-augonnet|<tuple|3|13>>
+    <associate|bib-bezanson2012julia|<tuple|5|13>>
+    <associate|bib-heft|<tuple|18|14>>
+    <associate|bib-jax2018github|<tuple|7|13>>
+    <associate|bib-kloeckner_loopy_2014|<tuple|9|13>>
+    <associate|bib-kloeckner_pycuda_2012|<tuple|11|13>>
+    <associate|bib-kloeckner_pyopencl_2012|<tuple|10|13>>
+    <associate|bib-lazy|<tuple|12|13>>
+    <associate|bib-okuta2017numpycompatible|<tuple|13|13>>
+    <associate|bib-parsec|<tuple|6|13>>
+    <associate|bib-xla|<tuple|15|13>>
   </collection>
 </references>
 
 <\auxiliary>
   <\collection>
+    <\associate|bib>
+      kloeckner_pycuda_2012
+
+      Castro
+
+      Tejedor_2016
+
+      Slaughter_2019
+
+      Pykokkos
+
+      Bauer2014LegionPD
+
+      okuta2017numpycompatible
+
+      bezanson2012julia
+
+      jax2018github
+
+      xla
+
+      Abadi
+
+      Paszke
+
+      augonnet
+
+      parsec
+
+      heft
+
+      kloeckner_loopy_2014
+
+      lazy
+
+      kloeckner_pyopencl_2012
+    </associate>
     <\associate|figure>
       <tuple|normal|<\surround|<hidden-binding|<tuple>|1>|>
         Profiles for CUDAGraph (top) and PyCUDA (bottom) for
@@ -885,6 +1102,10 @@
 
       5.<space|2spc>RESULTS <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
       <no-break><pageref|auto-15>
+
+      <vspace*|1fn><with|font-series|<quote|bold>|math-font-series|<quote|bold>|font-shape|<quote|small-caps>|Bibliography>
+      <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
+      <pageref|auto-18><vspace|0.5fn>
     </associate>
   </collection>
 </auxiliary>

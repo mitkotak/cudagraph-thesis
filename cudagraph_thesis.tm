@@ -81,27 +81,27 @@
 
   <abstract-data|<\abstract>
     Array programming paradigm offers routines to express the computation
-    cleanly for for a wide variety of scientific computing applications
-    (Finite Element Method, Stencil Codes, Image Processing, Machine
-    Learning, etc.). While there's ongoing work to provide efficient data
-    structures and fast library implementations for many common array
-    operations, the performance benefits are tied to optimized method calls
-    and vectorized array operations, both of which evaporate in larger
-    scientific codes that do not adhere to these constraints. There have been
-    a lot of efforts in scaling up n-d array applications through kernel and
-    loop fusion, but little attention has been paid towards harnesssing the
-    concurrency across array operations. The dependency pattern between these
-    array operations allow multiple array operations to be executed
-    concurrently. This concurrency can be targeted to accelarate the
-    application's performance. NVIDIA's <verbatim|CUDAGraph>s offers a task
-    programming model that can help realise this concurrency by overcoming
-    kernel launch latencies and exploiting kernel overlap by scheduling
-    multiple kernel executions in parallel. In this work we map the array
-    operations onto a precise data-flow graph and expose that to a GPU via
-    <verbatim|CUDAGraphs>. To evaluate the soundness of this approach, we
-    port a suite of DG-FEM operators that represent real life workloads to
-    our framework and observe a speedup of upto 32x over a version where the
-    array operations are executed one after the other.
+    cleanly for a wide variety of scientific computing applications (Finite
+    Element Method, Stencil Codes, Image Processing, Machine Learning, etc.).
+    While there's ongoing work to provide efficient data structures and fast
+    library implementations for many common array operations, the performance
+    benefits are tied to optimized method calls and vectorized array
+    operations, both of which evaporate in larger scientific codes that do
+    not adhere to these constraints. There have been a lot of efforts in
+    scaling up n-d array applications through kernel and loop fusion, but
+    little attention has been paid towards harnesssing the concurrency across
+    array operations. The dependency pattern between these array operations
+    allow multiple array operations to be executed concurrently. This
+    concurrency can be targeted to accelarate the application's performance.
+    NVIDIA's <verbatim|CUDAGraph>s offers a task programming model that can
+    help realise this concurrency by overcoming kernel launch latencies and
+    exploiting kernel overlap by scheduling multiple kernel executions in
+    parallel. In this work we map the array operations onto a precise
+    data-flow graph and expose that to a GPU via <verbatim|CUDAGraphs>. To
+    evaluate the soundness of this approach, we port a suite of DG-FEM
+    operators that represent real life workloads to our framework and observe
+    a speedup of upto 32x over a version where the array operations are
+    executed one after the other.
   </abstract>>
 
   \;
@@ -257,7 +257,9 @@
 
     <glossary-1|<\surround|<hidden-binding|<tuple>|4>|>
       Performance of our framework (<with|font-family|tt|language|verbatim|Pytato-PyCUDA-CUDAGraph>)
-      for DG-FEM operators over sequential stream execution
+      for\ 
+
+      DG-FEM operators over sequential stream execution
       (<with|font-family|tt|language|verbatim|PyOpenCL>).
     </surround>|<pageref|auto-20>>
   </list-of-figures>
@@ -371,7 +373,7 @@
 
     \;
   <|small-figure>
-    Profiles for CUDAGraph (top) and PyCUDA (bottom) for
+    Profiles for CUDAGraph (bottom) and PyCUDA (top) for
     <verbatim|where>(<em|condition, if, else>) <verbatim|+> <verbatim|1>
   </small-figure>
 
@@ -640,7 +642,8 @@
   vistor for rewriting <verbatim|Pytato> IR expressions. <verbatim|Pytato>
   code is lowered onto CUDAGraph through a two stage code generation process
   as shown in Alg 3. The code generation gets triggered by passing the
-  <verbatim|Pytato> IR created in Alg 2 to <verbatim|pt.generate_cudagraph.>
+  <verbatim|Pytato> expression created in Alg 2 to
+  <verbatim|pt.generate_cudagraph.>
 
   <\named-algorithm>
     3: Pytato-PyCUDAGraph generated code
@@ -1303,54 +1306,54 @@
   <\collection>
     <associate|auto-1|<tuple|?|3>>
     <associate|auto-10|<tuple|1|13>>
-    <associate|auto-11|<tuple|3.2|13>>
+    <associate|auto-11|<tuple|3.2|14>>
     <associate|auto-12|<tuple|3.3|14>>
-    <associate|auto-13|<tuple|3|14>>
-    <associate|auto-14|<tuple|4|14>>
-    <associate|auto-15|<tuple|4.1|16>>
-    <associate|auto-16|<tuple|4.2|17>>
-    <associate|auto-17|<tuple|5|18>>
-    <associate|auto-18|<tuple|5.1|18>>
-    <associate|auto-19|<tuple|2|18>>
+    <associate|auto-13|<tuple|3|15>>
+    <associate|auto-14|<tuple|4|15>>
+    <associate|auto-15|<tuple|4.1|17>>
+    <associate|auto-16|<tuple|4.2|18>>
+    <associate|auto-17|<tuple|5|19>>
+    <associate|auto-18|<tuple|5.1|19>>
+    <associate|auto-19|<tuple|2|19>>
     <associate|auto-2|<tuple|?|7>>
-    <associate|auto-20|<tuple|4|19>>
-    <associate|auto-21|<tuple|5.2|20>>
-    <associate|auto-22|<tuple|6|20>>
-    <associate|auto-23|<tuple|6|21>>
+    <associate|auto-20|<tuple|4|20>>
+    <associate|auto-21|<tuple|5.2|21>>
+    <associate|auto-22|<tuple|6|21>>
+    <associate|auto-23|<tuple|6|23>>
     <associate|auto-3|<tuple|?|9>>
-    <associate|auto-4|<tuple|1|9>>
+    <associate|auto-4|<tuple|1|10>>
     <associate|auto-5|<tuple|1|10>>
     <associate|auto-6|<tuple|2|11>>
-    <associate|auto-7|<tuple|2|11>>
-    <associate|auto-8|<tuple|3|12>>
-    <associate|auto-9|<tuple|3.1|12>>
-    <associate|bib-Abadi2016|<tuple|4|21>>
-    <associate|bib-Alan2019|<tuple|2|21>>
-    <associate|bib-Augonnet2011|<tuple|5|21>>
-    <associate|bib-Awar2021|<tuple|6|21>>
-    <associate|bib-Bauer2014|<tuple|7|21>>
-    <associate|bib-Bauer2019|<tuple|8|21>>
-    <associate|bib-Bezanson2012|<tuple|9|21>>
-    <associate|bib-Bradbury2018|<tuple|10|21>>
-    <associate|bib-Bruckner2009|<tuple|3|21>>
-    <associate|bib-Castro2023|<tuple|11|21>>
-    <associate|bib-Coelho2017|<tuple|12|21>>
-    <associate|bib-Hoque2017|<tuple|13|21>>
-    <associate|bib-Kristensen2013|<tuple|17|21>>
-    <associate|bib-Kulkarni2023|<tuple|18|21>>
-    <associate|bib-Lam2015|<tuple|19|21>>
-    <associate|bib-Lenstra1990|<tuple|20|21>>
-    <associate|bib-Okuta2017|<tuple|22|21>>
-    <associate|bib-Paszke2019|<tuple|23|22>>
-    <associate|bib-Sabne2020|<tuple|24|22>>
-    <associate|bib-Slaughter2019|<tuple|25|22>>
-    <associate|bib-Stefan2014|<tuple|21|21>>
-    <associate|bib-Suresh2003|<tuple|27|22>>
-    <associate|bib-Tejedor2016|<tuple|26|22>>
-    <associate|bib-cudagraphs|<tuple|1|21>>
-    <associate|bib-kloeckner2009|<tuple|14|21>>
-    <associate|bib-loopy|<tuple|15|21>>
-    <associate|bib-pyopencl|<tuple|16|21>>
+    <associate|auto-7|<tuple|2|12>>
+    <associate|auto-8|<tuple|3|13>>
+    <associate|auto-9|<tuple|3.1|13>>
+    <associate|bib-Abadi2016|<tuple|4|23>>
+    <associate|bib-Alan2019|<tuple|2|23>>
+    <associate|bib-Augonnet2011|<tuple|5|23>>
+    <associate|bib-Awar2021|<tuple|6|23>>
+    <associate|bib-Bauer2014|<tuple|7|23>>
+    <associate|bib-Bauer2019|<tuple|8|23>>
+    <associate|bib-Bezanson2012|<tuple|9|23>>
+    <associate|bib-Bradbury2018|<tuple|10|23>>
+    <associate|bib-Bruckner2009|<tuple|3|23>>
+    <associate|bib-Castro2023|<tuple|11|23>>
+    <associate|bib-Coelho2017|<tuple|12|23>>
+    <associate|bib-Hoque2017|<tuple|13|23>>
+    <associate|bib-Kristensen2013|<tuple|17|23>>
+    <associate|bib-Kulkarni2023|<tuple|18|23>>
+    <associate|bib-Lam2015|<tuple|19|23>>
+    <associate|bib-Lenstra1990|<tuple|20|23>>
+    <associate|bib-Okuta2017|<tuple|22|23>>
+    <associate|bib-Paszke2019|<tuple|23|24>>
+    <associate|bib-Sabne2020|<tuple|24|24>>
+    <associate|bib-Slaughter2019|<tuple|25|24>>
+    <associate|bib-Stefan2014|<tuple|21|23>>
+    <associate|bib-Suresh2003|<tuple|27|24>>
+    <associate|bib-Tejedor2016|<tuple|26|24>>
+    <associate|bib-cudagraphs|<tuple|1|23>>
+    <associate|bib-kloeckner2009|<tuple|14|23>>
+    <associate|bib-loopy|<tuple|15|23>>
+    <associate|bib-pyopencl|<tuple|16|23>>
   </collection>
 </references>
 
@@ -1415,7 +1418,7 @@
     </associate>
     <\associate|figure>
       <tuple|normal|<\surround|<hidden-binding|<tuple>|1>|>
-        Profiles for CUDAGraph (top) and PyCUDA (bottom) for
+        Profiles for CUDAGraph (bottom) and PyCUDA (top) for
         <with|font-family|<quote|tt>|language|<quote|verbatim>|where>(<with|font-shape|<quote|italic>|condition,
         if, else>) <with|font-family|<quote|tt>|language|<quote|verbatim>|+>
         <with|font-family|<quote|tt>|language|<quote|verbatim>|1>

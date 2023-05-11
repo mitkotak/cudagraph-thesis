@@ -637,10 +637,14 @@
   is made aware of a defined dependency graph ahead of execution. Since
   <verbatim|Pytato>'s computation graph maps precisely onto
   <verbatim|CUDAGraphs>, we implement a <verbatim|Pytato>-<verbatim|CUDAGraph>
-  vistor for rewriting <verbatim|Pytato> IR expressions. Pytato code is
-  lowered onto CUDAGraph through a two stage code generation process:
+  vistor for rewriting <verbatim|Pytato> IR expressions. <verbatim|Pytato>
+  code is lowered onto CUDAGraph through a two stage code generation process
+  as shown in Alg 3. The code generation gets triggered by passing the
+  <verbatim|Pytato> IR created in Alg 2 to <verbatim|pt.generate_cudagraph.>
 
-  <\named-algorithm|3: Pytato-PyCUDAGraph generated code>
+  <\named-algorithm>
+    3: Pytato-PyCUDAGraph generated code
+  <|named-algorithm>
     <\python-code>
       import pycuda.driver as _pt_drv
 
@@ -1314,7 +1318,7 @@
     <associate|auto-22|<tuple|6|20>>
     <associate|auto-23|<tuple|6|21>>
     <associate|auto-3|<tuple|?|9>>
-    <associate|auto-4|<tuple|1|10>>
+    <associate|auto-4|<tuple|1|9>>
     <associate|auto-5|<tuple|1|10>>
     <associate|auto-6|<tuple|2|11>>
     <associate|auto-7|<tuple|2|11>>

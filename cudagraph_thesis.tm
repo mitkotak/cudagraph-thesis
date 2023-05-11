@@ -407,7 +407,7 @@
   We formulate our system by buiding a <verbatim|CUDAGraph>-based
   <verbatim|PyCUDA> target for <verbatim|Pytato's> IR which captures the
   user-defined DAG. The process is <em|transparent>. The key technical
-  contributions of our thesis involve:
+  contributions of this thesis involve:
 
   <\enumerate>
     <item>Extending <samp|<verbatim|PyCUDA>> to allow calls to the
@@ -601,7 +601,7 @@
   expression containing per index value of the array computation. This helps
   create a generalized expression for expressing array computations.
 
-  Here's a simple example demonstrating <verbatim|Pytato> usage
+  Alg. 2 shows a simple example demonstrating <verbatim|Pytato> usage
 
   <\named-algorithm|2: Pytato expression building for doubling operation>
     <\python-code>

@@ -100,8 +100,8 @@
     data-flow graph and expose that to a GPU via <verbatim|CUDAGraphs>. To
     evaluate the soundness of this approach, we port a suite of DG-FEM
     operators that represent real life workloads to our framework and observe
-    a speedup of up to 32x over a version where the array operations are
-    executed one after the other.
+    a speedup of up to 32\<times\> over a version where the array operations
+    are executed one after the other.
   </abstract>>
 
   \;
@@ -347,8 +347,8 @@
   GPU memory. Incase of <verbatim|PyCUDA>, this support is provided through
   the <verbatim|GPUArray> interface. While abstractions like
   <verbatim|GPUArray>'s offer a very convenient abstraction for managing GPU
-  memory, they are not yet able to automatically schedule and manage
-  overlapping array operations onto multiple streams. The concurrency
+  memory backed array, they are not yet able to automatically schedule and
+  manage overlapping array operations onto multiple streams. The concurrency
   available in the dependency pattern for these array routines can be
   exploited to saturate all of the available execution units.
 
@@ -387,27 +387,29 @@
   Our framework realizes this concurrency across array operations through
   <verbatim|NVIDIA's> <verbatim|CUDAGraph>s<cite|cudagraphs>.
   <verbatim|CUDAGraph> is a task-based programming model that allows
-  asynchronous execution of a user-defined Directed Acyclic Graph (DAG). For
-  example, Fig. 1 highlights the parallel stream scheduling in
-  <verbatim|CUDAGraphs> which can efficiently use more GPU resources compared
-  to single stream scheduling.
+  asynchronous execution of a user-defined Directed Acyclic Graph (DAG) of
+  computational tasks. For example, Fig. 1 highlights the parallel stream
+  scheduling in <verbatim|CUDAGraphs> which can efficiently use more GPU
+  resources compared to single stream scheduling.
 
   \ When one places a kernel into a stream, the host driver performs a
   sequence of operations in preparation for the execution of the kernel.
   These operations are what are typically called \Pkernel overhead\Q. To
-  reduce this cost, CUDA graphs amortize the overheads of multiple kernel
-  launches into one graph launch. However, since computing a graph is more
-  expensive than running kernels directly<cite|Alan2019>, the performance
-  gains only become apparent for large computations that <em|fill> the GPU.
+  reduce this cost, CUDA graphs hide the latency corresponding to \ the
+  overheads of multiple kernel launches into one graph launch. However, since
+  computing a graph is more expensive than running kernels
+  directly<cite|Alan2019>, the performance gains only become apparent for
+  large computations that <em|fill> the GPU.
 
   One such class of array-based PDE solvers that is able to scale up to
   modern GPU architectures is Discontinuous Galerkin Finite Element Method
-  (DG-FEM). In <cite|kloeckner2009>, Kloeckner et al. report a maximum
-  possible speedup of 50 or more on GPUs, making DG-FEM an appealing
-  application for evaluating the viability of <verbatim|CUDAGraphs> for
-  array-based programs. While our framework is generic, we evaluate the
+  (DG-FEM)<cite|kloeckner2009>. In DG-FEM worklaods,c omputations
+  corresponding to the surface termsand the volume impose no memory
+  dependency on each other. One of the questions we intend to answer in this
+  work is quantifying the profitability of realizing the concurrency between
+  such tasks on GPU systems. While our framework is generic, we evaluate the
   profitability of <verbatim|CUDAGraphs> by targeting three end-to-end DG-FEM
-  operators and observe a speedup of up to 32x.
+  operators and observe a speedup of up to 32\<times\>.
 
   We formulate our system by building a <verbatim|CUDAGraph>-based
   <verbatim|PyCUDA> target for <verbatim|Pytato's> IR which captures the
@@ -501,18 +503,18 @@
 
   <verbatim|CUDAGraphs> provide a way to execute a partially ordered set of
   compute/memory operations on a GPU, compared to the fully ordered
-  <verbatim|CUDA> streams: : a stream in <verbatim|CUDA> is a queue of copy
-  and compute commands. Within a stream, enqueued operations are executed on
-  the GPU in the same order as they are placed into the stream by the
-  programmer with a single active task at a given instant. Thus, two kernels
-  in the same stream cannot execute in parallel, even without data
-  dependencies. As shown in Fig. 1 this can be lead to lower throughput as
-  concurrency across instructions of independent kernels cannot be
-  parallelized in the single-stream mode of execution. The solution is to run
-  different CUDA streams in parallel through the use of CUDA events, which
-  allow streams to synchronize with each other without blocking the host
-  execution. However, using CUDA events to efficiently synchronize multiple
-  complex streams by hand can be cumbersome.
+  <verbatim|CUDA> streams: a stream in <verbatim|CUDA> is a queue of copy and
+  compute commands. Within a stream, enqueued operations are executed on the
+  GPU in the same order as they are placed into the stream by the programmer
+  with a single active task at a given instant. Thus, two kernels in the same
+  stream cannot execute in parallel, even without data dependencies. As shown
+  in Fig. 1 this can be lead to lower throughput as concurrency across
+  instructions of independent kernels cannot be parallelized in the
+  single-stream mode of execution. The solution is to run different CUDA
+  streams in parallel through the use of CUDA events, which allow streams to
+  synchronize with each other without blocking the host execution. However,
+  using CUDA events to efficiently synchronize multiple complex streams by
+  hand can be cumbersome.
 
   <verbatim|<verbatim|>CUDAGraphs> offer a means to efficiently schedule
   kernel launches on multiple streams through a user-defined DAG. \ A
@@ -549,7 +551,9 @@
   <subsection|<verbatim|Loopy>>
 
   <verbatim|Loopy><cite|loopy> is a loop transformation engine based on the
-  Polyhedral model.
+  Polyhedral model. A <with|font-shape|italic|translation unit> is a key
+  construct in the IR to model a computation within Loopy. The core elements
+  of a translation unit are:
 
   1. <em|Loop Domains>: \ The upper and lower bounds of the result array's
   memory access pattern in the <verbatim|OpenCL> format sourced from the
@@ -845,6 +849,8 @@
     <space|2em><with|color||<with|color|dark cyan|{Returns the kernel string
     and launch configuration}>>
 
+    <space|2em><text-dots>
+
     <strong|end function>
 
     \;
@@ -959,8 +965,6 @@
   <strong|Platform>: All of our experiments were performed on GPU NVIDIA
   TITAN V with 6144 GFLOPs/s peak double precision and 652.8 GB/s peak
   bandwidth.
-
-  \;
 
   <big-table|<wide-tabular|<tformat|<twith|table-tborder|3ln>|<twith|table-bborder|3ln>|<table|<row|<\cell>
     \;
@@ -1116,16 +1120,16 @@
   We used wall clock times for our measurement with 2 seconds being spent in
   the warmup loop and 5 seconds for the iteration loop.\ 
 
-  We observe speedups of up to 8-32x for Wave, 2-4x for Euler and 2-24x for
-  Compressible Navier Stokes with the resulting performance being closely
-  tied to the polynomial order as reported in <cite|kloeckner2009>. The large
-  variation in performance can be attributed to the difference in computation
-  graph topologies for each operator. We also note that the performance is
-  largely limited by memory bandwidth. As observed in Fig. 2, the scheduler
-  maximally parallelizes the given CUDAGraph without limiting the stream
-  usage. Thus, in execution graphs with high memory footprints, the GPU
-  memory can explode which in this case limits the scaling to higher mesh
-  resolutions. \ 
+  We observe speedups of up to 8-32\<times\> for Wave, 2-4\<times\> for Euler
+  and 2-24\<times\> for Compressible Navier Stokes with the resulting
+  performance being closely tied to the polynomial order as reported in
+  <cite|kloeckner2009>. The large variation in performance can be attributed
+  to the difference in computation graph topologies for each operator. We
+  also note that the performance is largely limited by memory bandwidth. As
+  observed in Fig. 2, the scheduler maximally parallelizes the given
+  CUDAGraph without limiting the stream usage. Thus, in execution graphs with
+  high memory footprints, the GPU memory can explode which in this case
+  limits the scaling to higher mesh resolutions. \ 
 
   <section|Conclusion>
 
@@ -1149,8 +1153,8 @@
 
     <item>And finally we assess the profitability of <verbatim|CUDAGraphs>
     for DG-FEM workloads by evaluating our framework on three end-to-end
-    DG-FEM operators. We record a speedup of up to 32x for Navier Stokes
-    operator over sequential stream execution.
+    DG-FEM operators. We record a speedup of up to 32\<times\> for Navier
+    Stokes operator over sequential stream execution.
   </enumerate>
 
   \;
@@ -1330,52 +1334,51 @@
     <associate|auto-10|<tuple|3.2|13>>
     <associate|auto-11|<tuple|3.3|14>>
     <associate|auto-12|<tuple|2|14>>
-    <associate|auto-13|<tuple|4|15>>
-    <associate|auto-14|<tuple|4.1|15>>
+    <associate|auto-13|<tuple|4|14>>
+    <associate|auto-14|<tuple|4.1|16>>
     <associate|auto-15|<tuple|4.2|17>>
     <associate|auto-16|<tuple|5|18>>
-    <associate|auto-17|<tuple|5.1|19>>
-    <associate|auto-18|<tuple|2|19>>
+    <associate|auto-17|<tuple|5.1|18>>
+    <associate|auto-18|<tuple|2|18>>
     <associate|auto-19|<tuple|3|19>>
     <associate|auto-2|<tuple|?|7>>
     <associate|auto-20|<tuple|5.2|20>>
-    <associate|auto-21|<tuple|6|21>>
+    <associate|auto-21|<tuple|6|20>>
     <associate|auto-22|<tuple|3|21>>
-    <associate|auto-23|<tuple|6|23>>
     <associate|auto-3|<tuple|?|9>>
     <associate|auto-4|<tuple|1|10>>
     <associate|auto-5|<tuple|1|10>>
     <associate|auto-6|<tuple|2|11>>
     <associate|auto-7|<tuple|3|12>>
-    <associate|auto-8|<tuple|3.1|13>>
+    <associate|auto-8|<tuple|3.1|12>>
     <associate|auto-9|<tuple|1|13>>
-    <associate|bib-Abadi2016|<tuple|4|23>>
-    <associate|bib-Alan2019|<tuple|2|23>>
-    <associate|bib-Augonnet2011|<tuple|5|23>>
-    <associate|bib-Awar2021|<tuple|6|23>>
-    <associate|bib-Bauer2014|<tuple|7|23>>
-    <associate|bib-Bauer2019|<tuple|8|23>>
-    <associate|bib-Bezanson2012|<tuple|9|23>>
-    <associate|bib-Bradbury2018|<tuple|10|23>>
-    <associate|bib-Bruckner2009|<tuple|3|23>>
-    <associate|bib-Castro2023|<tuple|11|23>>
-    <associate|bib-Coelho2017|<tuple|12|23>>
-    <associate|bib-Hoque2017|<tuple|13|23>>
-    <associate|bib-Kristensen2013|<tuple|17|23>>
-    <associate|bib-Kulkarni2023|<tuple|18|23>>
-    <associate|bib-Lam2015|<tuple|19|23>>
-    <associate|bib-Lenstra1990|<tuple|20|23>>
-    <associate|bib-Okuta2017|<tuple|22|23>>
-    <associate|bib-Paszke2019|<tuple|23|24>>
-    <associate|bib-Sabne2020|<tuple|24|24>>
-    <associate|bib-Slaughter2019|<tuple|25|24>>
-    <associate|bib-Stefan2014|<tuple|21|23>>
-    <associate|bib-Suresh2003|<tuple|27|24>>
-    <associate|bib-Tejedor2016|<tuple|26|24>>
-    <associate|bib-cudagraphs|<tuple|1|23>>
-    <associate|bib-kloeckner2009|<tuple|14|23>>
-    <associate|bib-loopy|<tuple|15|23>>
-    <associate|bib-pyopencl|<tuple|16|23>>
+    <associate|bib-Abadi2016|<tuple|4|21>>
+    <associate|bib-Alan2019|<tuple|2|21>>
+    <associate|bib-Augonnet2011|<tuple|5|21>>
+    <associate|bib-Awar2021|<tuple|6|21>>
+    <associate|bib-Bauer2014|<tuple|7|21>>
+    <associate|bib-Bauer2019|<tuple|8|21>>
+    <associate|bib-Bezanson2012|<tuple|9|21>>
+    <associate|bib-Bradbury2018|<tuple|10|21>>
+    <associate|bib-Bruckner2009|<tuple|3|21>>
+    <associate|bib-Castro2023|<tuple|11|21>>
+    <associate|bib-Coelho2017|<tuple|12|21>>
+    <associate|bib-Hoque2017|<tuple|13|21>>
+    <associate|bib-Kristensen2013|<tuple|17|21>>
+    <associate|bib-Kulkarni2023|<tuple|18|21>>
+    <associate|bib-Lam2015|<tuple|19|21>>
+    <associate|bib-Lenstra1990|<tuple|20|21>>
+    <associate|bib-Okuta2017|<tuple|22|21>>
+    <associate|bib-Paszke2019|<tuple|23|22>>
+    <associate|bib-Sabne2020|<tuple|24|22>>
+    <associate|bib-Slaughter2019|<tuple|25|22>>
+    <associate|bib-Stefan2014|<tuple|21|21>>
+    <associate|bib-Suresh2003|<tuple|27|22>>
+    <associate|bib-Tejedor2016|<tuple|26|22>>
+    <associate|bib-cudagraphs|<tuple|1|21>>
+    <associate|bib-kloeckner2009|<tuple|14|21>>
+    <associate|bib-loopy|<tuple|15|21>>
+    <associate|bib-pyopencl|<tuple|16|21>>
   </collection>
 </references>
 
@@ -1391,8 +1394,6 @@
       Lam2015
 
       Bauer2019
-
-      Suresh2003
 
       Bruckner2009
 
@@ -1447,29 +1448,22 @@
       </surround>|<pageref|auto-5>>
 
       <tuple|normal|<\surround|<hidden-binding|<tuple>|2>|>
-        <with|font-family|<quote|tt>|language|<quote|verbatim>|CUDAGraph> API
-        generated graph for <with|font-family|<quote|tt>|language|<quote|verbatim>|where>(<with|font-shape|<quote|italic>|condition,
-        if, else>) <with|font-family|<quote|tt>|language|<quote|verbatim>|+>
-        <with|font-family|<quote|tt>|language|<quote|verbatim>|1>
-      </surround>|<pageref|auto-6>>
+        Pytato IR corresponding to doubling operation
+      </surround>|<pageref|auto-12>>
 
       <tuple|normal|<\surround|<hidden-binding|<tuple>|3>|>
-        Pytato IR corresponding to doubling operation
-      </surround>|<pageref|auto-13>>
-
-      <tuple|normal|<\surround|<hidden-binding|<tuple>|4>|>
         Performance of our framework (<with|font-family|<quote|tt>|language|<quote|verbatim>|Pytato-PyCUDA-CUDAGraph>)
         for DG-FEM operators over sequential stream execution
         (<with|font-family|<quote|tt>|language|<quote|verbatim>|PyOpenCL>).
-      </surround>|<pageref|auto-20>>
+      </surround>|<pageref|auto-19>>
     </associate>
     <\associate|table>
       <tuple|normal|<surround|<hidden-binding|<tuple>|1>||<with|font-family|<quote|ss>|<with|font-family|<quote|tt>|language|<quote|verbatim>|PyCUDA>>
       wrapper functions around <with|font-family|<quote|ss>|<with|font-family|<quote|tt>|language|<quote|verbatim>|CUDAGraph>>
-      API>|<pageref|auto-10>>
+      API>|<pageref|auto-9>>
 
       <tuple|normal|<surround|<hidden-binding|<tuple>|2>||Experimental
-      parameters for DG-FEM operators>|<pageref|auto-19>>
+      parameters for DG-FEM operators>|<pageref|auto-18>>
     </associate>
     <\associate|toc>
       <vspace*|1fn><with|font-series|<quote|bold>|math-font-series|<quote|bold>|font-shape|<quote|small-caps>|Abstract>
@@ -1488,55 +1482,55 @@
       <no-break><pageref|auto-4>
 
       2.<space|2spc>Related work <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
-      <no-break><pageref|auto-7>
+      <no-break><pageref|auto-6>
 
       3.<space|2spc>Overview <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
-      <no-break><pageref|auto-8>
+      <no-break><pageref|auto-7>
 
       <with|par-left|<quote|1tab>|3.1.<space|2spc><with|font-family|<quote|tt>|language|<quote|verbatim>|CUDA
       Graphs> <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
-      <no-break><pageref|auto-9>>
+      <no-break><pageref|auto-8>>
 
       <with|par-left|<quote|1tab>|3.2.<space|2spc><with|font-family|<quote|tt>|language|<quote|verbatim>|Loopy>
       <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
-      <no-break><pageref|auto-11>>
+      <no-break><pageref|auto-10>>
 
       <with|par-left|<quote|1tab>|3.3.<space|2spc><with|font-family|<quote|tt>|language|<quote|verbatim>|Pytato>
       <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
-      <no-break><pageref|auto-12>>
+      <no-break><pageref|auto-11>>
 
       4.<space|2spc>Lowering Array Operations to
       <with|font-family|<quote|tt>|language|<quote|verbatim>|CUDAGraphs>
       <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
-      <no-break><pageref|auto-14>
+      <no-break><pageref|auto-13>
 
       <with|par-left|<quote|1tab>|4.1.<space|2spc>Stage 1: Build
       <with|font-family|<quote|tt>|language|<quote|verbatim>|CUDAGraph>
       <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
+      <no-break><pageref|auto-14>>
+
+      <with|par-left|<quote|1tab>|4.2.<space|2spc>Stage 2: Execute
+      <with|font-family|<quote|tt>|language|<quote|verbatim>|CUDAGraph>
+      <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
       <no-break><pageref|auto-15>>
 
-      <with|par-left|<quote|1tab>|4.2.<space|2spc>Stage 2: Update
-      <with|font-family|<quote|tt>|language|<quote|verbatim>|CUDAGraphExec>
-      <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
-      <no-break><pageref|auto-16>>
-
       5.<space|2spc>Results <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
-      <no-break><pageref|auto-17>
+      <no-break><pageref|auto-16>
 
       <with|par-left|<quote|1tab>|5.1.<space|2spc>Experimental Setup
       <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
-      <no-break><pageref|auto-18>>
+      <no-break><pageref|auto-17>>
 
       <with|par-left|<quote|1tab>|5.2.<space|2spc>Performance Evaluation
       <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
-      <no-break><pageref|auto-21>>
+      <no-break><pageref|auto-20>>
 
       6.<space|2spc>Conclusion <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
-      <no-break><pageref|auto-22>
+      <no-break><pageref|auto-21>
 
       <vspace*|1fn><with|font-series|<quote|bold>|math-font-series|<quote|bold>|font-shape|<quote|small-caps>|Bibliography>
       <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
-      <pageref|auto-23><vspace|0.5fn>
+      <pageref|auto-22><vspace|0.5fn>
     </associate>
   </collection>
 </auxiliary>

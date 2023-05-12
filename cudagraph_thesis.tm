@@ -347,7 +347,7 @@
   GPU memory. Incase of <verbatim|PyCUDA>, this support is provided through
   the <verbatim|GPUArray> interface. While abstractions like
   <verbatim|GPUArray>'s offer a very convenient abstraction for managing GPU
-  memory backed array, they are not yet able to automatically schedule and
+  memory backed arrays, they are not yet able to automatically schedule and
   manage overlapping array operations onto multiple streams. The concurrency
   available in the dependency pattern for these array routines can be
   exploited to saturate all of the available execution units.
@@ -403,13 +403,14 @@
 
   One such class of array-based PDE solvers that is able to scale up to
   modern GPU architectures is Discontinuous Galerkin Finite Element Method
-  (DG-FEM)<cite|kloeckner2009>. In DG-FEM worklaods,c omputations
-  corresponding to the surface termsand the volume impose no memory
-  dependency on each other. One of the questions we intend to answer in this
-  work is quantifying the profitability of realizing the concurrency between
-  such tasks on GPU systems. While our framework is generic, we evaluate the
-  profitability of <verbatim|CUDAGraphs> by targeting three end-to-end DG-FEM
-  operators and observe a speedup of up to 32\<times\>.
+  (DG-FEM)<cite|kloeckner2009>. In DG-FEM worklaods, computations
+  corresponding to the surface terms and the volume impose no memory
+  dependency on each other. <underline|One of the questions we intend to
+  answer in this work is quantifying the profitability of realizing the
+  concurrency between such tasks on GPU systems.> While our framework is
+  generic, we evaluate the profitability of <verbatim|CUDAGraphs> by
+  targeting three end-to-end DG-FEM operators and observe a speedup of up to
+  32\<times\>.
 
   We formulate our system by building a <verbatim|CUDAGraph>-based
   <verbatim|PyCUDA> target for <verbatim|Pytato's> IR which captures the
@@ -608,7 +609,7 @@
   expression containing per index value of the array computation. This helps
   create a generalized expression for expressing array computations.
 
-  Alg. 2 shows a simple example demonstrating <verbatim|Pytato> usage
+  Alg. 2 shows a simple example demonstrating <verbatim|Pytato> usage.
 
   <\named-algorithm|2: Pytato expression building for doubling operation>
     <\python-code>

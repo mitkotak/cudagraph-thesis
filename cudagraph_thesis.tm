@@ -216,7 +216,7 @@
     <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
     <no-break><pageref|auto-11>>
 
-    4.<space|2spc>Lowering Array Operations to CUDAGraphs
+    4.<space|2spc>Lowering Array Operations to CUDA graphs
     <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
     <no-break><pageref|auto-13>
 
@@ -239,12 +239,16 @@
     <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
     <no-break><pageref|auto-20>>
 
+    <with|par-left|1tab|5.3.<space|2spc>Discussion
+    <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
+    <no-break><pageref|auto-21>>
+
     6.<space|2spc>Conclusion <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
-    <no-break><pageref|auto-21>
+    <no-break><pageref|auto-22>
 
     <vspace*|1fn><with|font-series|bold|math-font-series|bold|font-shape|small-caps|Bibliography>
     <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
-    <pageref|auto-22><vspace|0.5fn>
+    <pageref|auto-23><vspace|0.5fn>
   </table-of-contents>
 
   \;
@@ -1160,14 +1164,13 @@
     </indent>
   </indent>
 
-  <strong|Task performance models:> CUDA graphs can use history-based
+  <strong|Task performance models:> CUDA graphs might use history-based
   prediction for kernels by assuming that for a given application they are
   mostly always called with the same parameters, the typical task granularity
   for instance. Given task parameters characteristics (the size of the data,
-  typically), the scheduler can compute a hash characterizing this task's
-  complexity, and that can thus be used as an index in the history tables
-  from which an average of the previous execution times can be obtained. The
-  history is saved to a file to be reused for further executions.
+  typically), the scheduler might compute a hash characterizing this task's
+  complexity, and that might thus be used as an index in the history tables
+  from which an average of the previous execution times might be obtained.
 
   <section|Conclusion>
 
@@ -1213,7 +1216,7 @@
       graphs.<newblock>
 
       <bibitem*|3><label|bib-Bruckner2009><slink|http://www2.informatik.uniosnabrueck.de/knust/class/>.
-      <newblock>Complexity results for scheduling problems.<newblock>
+      Complexity results for scheduling problems.<newblock>
 
       <bibitem*|4><label|bib-Abadi2016>Mart<math|<wide|<text|\<in\>>|\<acute\>>>
       Abadi, Ashish Agarwal, Paul Barham, Eugene Brevdo, Zhifeng Chen, Craig
@@ -1365,53 +1368,53 @@
   <\collection>
     <associate|auto-1|<tuple|?|3>>
     <associate|auto-10|<tuple|3.2|13>>
-    <associate|auto-11|<tuple|3.3|13>>
+    <associate|auto-11|<tuple|3.3|14>>
     <associate|auto-12|<tuple|2|14>>
     <associate|auto-13|<tuple|4|14>>
-    <associate|auto-14|<tuple|4.1|14>>
-    <associate|auto-15|<tuple|4.2|16>>
-    <associate|auto-16|<tuple|5|17>>
+    <associate|auto-14|<tuple|4.1|16>>
+    <associate|auto-15|<tuple|4.2|17>>
+    <associate|auto-16|<tuple|5|18>>
     <associate|auto-17|<tuple|5.1|18>>
     <associate|auto-18|<tuple|2|18>>
-    <associate|auto-19|<tuple|3|18>>
+    <associate|auto-19|<tuple|3|19>>
     <associate|auto-2|<tuple|?|7>>
-    <associate|auto-20|<tuple|5.2|19>>
+    <associate|auto-20|<tuple|5.2|20>>
     <associate|auto-21|<tuple|5.3|20>>
-    <associate|auto-22|<tuple|6|20>>
-    <associate|auto-23|<tuple|3|21>>
+    <associate|auto-22|<tuple|6|21>>
+    <associate|auto-23|<tuple|3|23>>
     <associate|auto-3|<tuple|?|9>>
     <associate|auto-4|<tuple|1|10>>
     <associate|auto-5|<tuple|1|10>>
     <associate|auto-6|<tuple|2|11>>
-    <associate|auto-7|<tuple|3|11>>
+    <associate|auto-7|<tuple|3|12>>
     <associate|auto-8|<tuple|3.1|12>>
-    <associate|auto-9|<tuple|1|12>>
-    <associate|bib-Abadi2016|<tuple|4|21>>
-    <associate|bib-Alan2019|<tuple|2|21>>
-    <associate|bib-Augonnet2011|<tuple|5|21>>
-    <associate|bib-Awar2021|<tuple|6|21>>
-    <associate|bib-Bauer2014|<tuple|7|21>>
-    <associate|bib-Bauer2019|<tuple|8|21>>
-    <associate|bib-Bezanson2012|<tuple|9|21>>
-    <associate|bib-Bradbury2018|<tuple|10|21>>
-    <associate|bib-Bruckner2009|<tuple|3|21>>
-    <associate|bib-Castro2023|<tuple|11|21>>
-    <associate|bib-Coelho2017|<tuple|12|21>>
-    <associate|bib-Hoque2017|<tuple|13|21>>
-    <associate|bib-Kristensen2013|<tuple|17|21>>
-    <associate|bib-Kulkarni2023|<tuple|18|21>>
-    <associate|bib-Lam2015|<tuple|19|21>>
-    <associate|bib-Lenstra1990|<tuple|20|21>>
-    <associate|bib-Okuta2017|<tuple|22|21>>
-    <associate|bib-Paszke2019|<tuple|23|22>>
-    <associate|bib-Sabne2020|<tuple|24|22>>
-    <associate|bib-Slaughter2019|<tuple|25|22>>
-    <associate|bib-Stefan2014|<tuple|21|21>>
-    <associate|bib-Tejedor2016|<tuple|26|22>>
-    <associate|bib-cudagraphs|<tuple|1|21>>
-    <associate|bib-kloeckner2009|<tuple|14|21>>
-    <associate|bib-loopy|<tuple|15|21>>
-    <associate|bib-pyopencl|<tuple|16|21>>
+    <associate|auto-9|<tuple|1|13>>
+    <associate|bib-Abadi2016|<tuple|4|23>>
+    <associate|bib-Alan2019|<tuple|2|23>>
+    <associate|bib-Augonnet2011|<tuple|5|23>>
+    <associate|bib-Awar2021|<tuple|6|23>>
+    <associate|bib-Bauer2014|<tuple|7|23>>
+    <associate|bib-Bauer2019|<tuple|8|23>>
+    <associate|bib-Bezanson2012|<tuple|9|23>>
+    <associate|bib-Bradbury2018|<tuple|10|23>>
+    <associate|bib-Bruckner2009|<tuple|3|23>>
+    <associate|bib-Castro2023|<tuple|11|23>>
+    <associate|bib-Coelho2017|<tuple|12|23>>
+    <associate|bib-Hoque2017|<tuple|13|23>>
+    <associate|bib-Kristensen2013|<tuple|17|23>>
+    <associate|bib-Kulkarni2023|<tuple|18|23>>
+    <associate|bib-Lam2015|<tuple|19|23>>
+    <associate|bib-Lenstra1990|<tuple|20|23>>
+    <associate|bib-Okuta2017|<tuple|22|23>>
+    <associate|bib-Paszke2019|<tuple|23|24>>
+    <associate|bib-Sabne2020|<tuple|24|24>>
+    <associate|bib-Slaughter2019|<tuple|25|24>>
+    <associate|bib-Stefan2014|<tuple|21|23>>
+    <associate|bib-Tejedor2016|<tuple|26|24>>
+    <associate|bib-cudagraphs|<tuple|1|23>>
+    <associate|bib-kloeckner2009|<tuple|14|23>>
+    <associate|bib-loopy|<tuple|15|23>>
+    <associate|bib-pyopencl|<tuple|16|23>>
   </collection>
 </references>
 
@@ -1481,25 +1484,21 @@
       </surround>|<pageref|auto-5>>
 
       <tuple|normal|<\surround|<hidden-binding|<tuple>|2>|>
-        \;
-      </surround>|<pageref|auto-6>>
+        Pytato IR corresponding to doubling operation
+      </surround>|<pageref|auto-12>>
 
       <tuple|normal|<\surround|<hidden-binding|<tuple>|3>|>
-        Pytato IR corresponding to doubling operation
-      </surround>|<pageref|auto-13>>
-
-      <tuple|normal|<\surround|<hidden-binding|<tuple>|4>|>
         Performance of our framework (<with|font-family|<quote|tt>|language|<quote|verbatim>|Pytato-PyCUDA>
         graph) for DG-FEM operators over sequential stream execution
         (<with|font-family|<quote|tt>|language|<quote|verbatim>|PyOpenCL>).
-      </surround>|<pageref|auto-20>>
+      </surround>|<pageref|auto-19>>
     </associate>
     <\associate|table>
       <tuple|normal|<surround|<hidden-binding|<tuple>|1>||<with|font-family|<quote|ss>|<with|font-family|<quote|tt>|language|<quote|verbatim>|PyCUDA>>
-      wrapper functions around CUDA graph driver API>|<pageref|auto-10>>
+      wrapper functions around CUDA graph driver API>|<pageref|auto-9>>
 
       <tuple|normal|<surround|<hidden-binding|<tuple>|2>||Experimental
-      parameters for DG-FEM operators>|<pageref|auto-19>>
+      parameters for DG-FEM operators>|<pageref|auto-18>>
     </associate>
     <\associate|toc>
       <vspace*|1fn><with|font-series|<quote|bold>|math-font-series|<quote|bold>|font-shape|<quote|small-caps>|Abstract>
@@ -1518,43 +1517,47 @@
       <no-break><pageref|auto-4>
 
       2.<space|2spc>Related work <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
-      <no-break><pageref|auto-7>
+      <no-break><pageref|auto-6>
 
       3.<space|2spc>Overview <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
-      <no-break><pageref|auto-8>
+      <no-break><pageref|auto-7>
 
       <with|par-left|<quote|1tab>|3.1.<space|2spc>CUDA graphs
       <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
-      <no-break><pageref|auto-9>>
+      <no-break><pageref|auto-8>>
 
       <with|par-left|<quote|1tab>|3.2.<space|2spc>Loopy
       <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
-      <no-break><pageref|auto-11>>
+      <no-break><pageref|auto-10>>
 
       <with|par-left|<quote|1tab>|3.3.<space|2spc>Pytato
       <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
-      <no-break><pageref|auto-12>>
+      <no-break><pageref|auto-11>>
 
-      4.<space|2spc>Lowering Array Operations to CUDAGraphs
+      4.<space|2spc>Lowering Array Operations to CUDA graphs
       <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
-      <no-break><pageref|auto-14>
+      <no-break><pageref|auto-13>
 
       <with|par-left|<quote|1tab>|4.1.<space|2spc>Stage 1: Build a CUDA graph
       <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
-      <no-break><pageref|auto-15>>
+      <no-break><pageref|auto-14>>
 
       <with|par-left|<quote|1tab>|4.2.<space|2spc>Stage 2: Execute CUDA graph
       <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
-      <no-break><pageref|auto-16>>
+      <no-break><pageref|auto-15>>
 
       5.<space|2spc>Results <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
-      <no-break><pageref|auto-17>
+      <no-break><pageref|auto-16>
 
       <with|par-left|<quote|1tab>|5.1.<space|2spc>Experimental Setup
       <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
-      <no-break><pageref|auto-18>>
+      <no-break><pageref|auto-17>>
 
       <with|par-left|<quote|1tab>|5.2.<space|2spc>Performance Evaluation
+      <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
+      <no-break><pageref|auto-20>>
+
+      <with|par-left|<quote|1tab>|5.3.<space|2spc>Discussion
       <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
       <no-break><pageref|auto-21>>
 

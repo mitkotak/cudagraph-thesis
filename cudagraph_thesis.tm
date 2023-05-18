@@ -80,9 +80,9 @@
   \;
 
   <\doc-subtitle>
-    Under the advise of:\ 
+    Faculty Mentor:<space|1em>Professor Andreas Klöckner
 
-    Professor Andreas Klöckner
+    <space|1em>Graduate Mentor:<space|1em>Kaushik Kulkarni<space|5em>
 
     <\description>
       \;
@@ -142,19 +142,109 @@
 
   \;
 
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  <\center>
+    \;
+
+    \;
+
+    \;
+
+    \;
+
+    \;
+
+    \;
+
+    <em|For my brilliant and ceaselessly supportive Mom>
+  </center>
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
   <\doc-subtitle>
-    \;
-
-    \;
-
-    \;
-
-    \;
-
-    \;
-
-    \;
-
     ACKNOWLEDGMENT
 
     \;
@@ -181,6 +271,24 @@
 
     Thank you, all of you.
   </description>
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
+
+  \;
 
   <\table-of-contents|toc>
     <vspace*|1fn><with|font-series|bold|math-font-series|bold|font-shape|small-caps|Abstract>
@@ -220,7 +328,7 @@
     <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
     <no-break><pageref|auto-13>
 
-    <with|par-left|1tab|4.1.<space|2spc>Stage 1: Build a CUDA graph
+    <with|par-left|1tab|4.1.<space|2spc>Stage 1: Build CUDA graph
     <datoms|<macro|x|<repeat|<arg|x>|<with|font-series|medium|<with|font-size|1|<space|0.2fn>.<space|0.2fn>>>>>|<htab|5mm>>
     <no-break><pageref|auto-14>>
 
@@ -738,7 +846,7 @@
     </python-code>
   </named-algorithm>
 
-  <subsection|Stage 1: Build a CUDA graph>
+  <subsection|Stage 1: Build CUDA graph>
 
   Since the CUDA graph runtime scheduler takes in a fully defined dataflow
   graph, we use Alg 4 to explore all of the array dependencies in the
@@ -1110,8 +1218,8 @@
 
   <subsection|Discussion>
 
-  We offer some explanations on the GPU subsystem interplay that enables this
-  performance gain by borrowing terms from the <verbatim|StarPU> runtime
+  We offer some explanations on the GPU subsystem interplay that might enable
+  this performance gain by borrowing terms from the <verbatim|StarPU> runtime
   system manual.
 
   <strong|Asynchronous data management and data requests:> Data transfers can
@@ -1127,13 +1235,13 @@
 
   <strong|Taking task duration/data transfers into account:> CUDA graphs
   might have a variation of the HEFT scheduling algorithm (Heterogeneous
-  Earliest Finish Time) for making scheduling decisions. It makes use of
-  performance prediction to keep track of the expected dates <em|Avail>
-  (<em|P<math|<rsub|i>>>) at which each processing unit will become available
-  (after all the tasks already assigned to it complete). A new task <em|T> is
-  then assigned to the processing unit <em|P><math|<rsub|i>> that minimizes
-  the new termination time with respect to the expected duration
-  <em|<math|<below|<with|font-shape|italic|<with|font-shape|italic|Est
+  Earliest Finish Time<cite|Topcuoglu2002>) for making scheduling decisions.
+  It makes use of performance prediction to keep track of the expected dates
+  <em|Avail> (<em|P<math|<rsub|i>>>) at which each processing unit will
+  become available (after all the tasks already assigned to it complete). A
+  new task <em|T> is then assigned to the processing unit
+  <em|P><math|<rsub|i>> that minimizes the new termination time with respect
+  to the expected duration <em|<math|<below|<with|font-shape|italic|<with|font-shape|italic|Est
   <around*|(|T|)>>>|<with|font-shape|italic|Pi>>>> \ of the task on the unit.
   In addition to the computation time, the scheduler might compute a penalty
   based on the times <math|\<cal-T\>><em|<math|<rsub|j\<rightarrow\>i>>><em|(d)>
@@ -1208,15 +1316,15 @@
   memory and direct kernel launch times.
 
   <\bibliography|bib|tm-plain|bibtex>
-    <\bib-list|26>
-      <bibitem*|1><label|bib-cudagraphs> <newblock>Effortless CUDA graphs.
-      in: Nvidia GPU Technology Conference (GTC) (2021).<newblock>
+    <\bib-list|27>
+      <bibitem*|1><label|bib-cudagraphs> <newblock>Effortless CUDA graphs in:
+      Nvidia GPU Technology Conference (GTC) (2021).<newblock>
 
       <bibitem*|2><label|bib-Alan2019> <newblock>Getting started with CUDA
       graphs.<newblock>
 
       <bibitem*|3><label|bib-Bruckner2009><slink|http://www2.informatik.uniosnabrueck.de/knust/class/>.
-      Complexity results for scheduling problems.<newblock>
+      <newblock>Complexity results for scheduling problems.<newblock>
 
       <bibitem*|4><label|bib-Abadi2016>Mart<math|<wide|<text|\<in\>>|\<acute\>>>
       Abadi, Ashish Agarwal, Paul Barham, Eugene Brevdo, Zhifeng Chen, Craig
@@ -1345,6 +1453,12 @@
       computational workflows in python. <newblock><with|font-shape|italic|The
       International Journal of High Performance Computing Applications>,
       31:66\U82, 7 2016.<newblock>
+
+      <bibitem*|27><label|bib-Topcuoglu2002>Haluk Topcuoglu, Salim
+      Hariri<localize|, and >Min<nbsp>You Wu. <newblock>Performance-effective
+      and low-complexity task scheduling for heterogeneous computing.
+      <newblock><with|font-shape|italic|IEEE Transactions on Parallel and
+      Distributed Systems>, 13, 2002.<newblock>
     </bib-list>
   </bibliography>
 
@@ -1367,54 +1481,55 @@
 <\references>
   <\collection>
     <associate|auto-1|<tuple|?|3>>
-    <associate|auto-10|<tuple|3.2|13>>
-    <associate|auto-11|<tuple|3.3|14>>
-    <associate|auto-12|<tuple|2|14>>
-    <associate|auto-13|<tuple|4|14>>
-    <associate|auto-14|<tuple|4.1|16>>
-    <associate|auto-15|<tuple|4.2|17>>
-    <associate|auto-16|<tuple|5|18>>
-    <associate|auto-17|<tuple|5.1|18>>
-    <associate|auto-18|<tuple|2|18>>
-    <associate|auto-19|<tuple|3|19>>
-    <associate|auto-2|<tuple|?|7>>
-    <associate|auto-20|<tuple|5.2|20>>
-    <associate|auto-21|<tuple|5.3|20>>
-    <associate|auto-22|<tuple|6|21>>
-    <associate|auto-23|<tuple|3|23>>
-    <associate|auto-3|<tuple|?|9>>
-    <associate|auto-4|<tuple|1|10>>
-    <associate|auto-5|<tuple|1|10>>
-    <associate|auto-6|<tuple|2|11>>
-    <associate|auto-7|<tuple|3|12>>
-    <associate|auto-8|<tuple|3.1|12>>
-    <associate|auto-9|<tuple|1|13>>
-    <associate|bib-Abadi2016|<tuple|4|23>>
-    <associate|bib-Alan2019|<tuple|2|23>>
-    <associate|bib-Augonnet2011|<tuple|5|23>>
-    <associate|bib-Awar2021|<tuple|6|23>>
-    <associate|bib-Bauer2014|<tuple|7|23>>
-    <associate|bib-Bauer2019|<tuple|8|23>>
-    <associate|bib-Bezanson2012|<tuple|9|23>>
-    <associate|bib-Bradbury2018|<tuple|10|23>>
-    <associate|bib-Bruckner2009|<tuple|3|23>>
-    <associate|bib-Castro2023|<tuple|11|23>>
-    <associate|bib-Coelho2017|<tuple|12|23>>
-    <associate|bib-Hoque2017|<tuple|13|23>>
-    <associate|bib-Kristensen2013|<tuple|17|23>>
-    <associate|bib-Kulkarni2023|<tuple|18|23>>
-    <associate|bib-Lam2015|<tuple|19|23>>
-    <associate|bib-Lenstra1990|<tuple|20|23>>
-    <associate|bib-Okuta2017|<tuple|22|23>>
-    <associate|bib-Paszke2019|<tuple|23|24>>
-    <associate|bib-Sabne2020|<tuple|24|24>>
-    <associate|bib-Slaughter2019|<tuple|25|24>>
-    <associate|bib-Stefan2014|<tuple|21|23>>
-    <associate|bib-Tejedor2016|<tuple|26|24>>
-    <associate|bib-cudagraphs|<tuple|1|23>>
-    <associate|bib-kloeckner2009|<tuple|14|23>>
-    <associate|bib-loopy|<tuple|15|23>>
-    <associate|bib-pyopencl|<tuple|16|23>>
+    <associate|auto-10|<tuple|3.2|15>>
+    <associate|auto-11|<tuple|3.3|16>>
+    <associate|auto-12|<tuple|2|16>>
+    <associate|auto-13|<tuple|4|16>>
+    <associate|auto-14|<tuple|4.1|18>>
+    <associate|auto-15|<tuple|4.2|19>>
+    <associate|auto-16|<tuple|5|20>>
+    <associate|auto-17|<tuple|5.1|20>>
+    <associate|auto-18|<tuple|2|20>>
+    <associate|auto-19|<tuple|3|21>>
+    <associate|auto-2|<tuple|?|9>>
+    <associate|auto-20|<tuple|5.2|22>>
+    <associate|auto-21|<tuple|5.3|22>>
+    <associate|auto-22|<tuple|6|23>>
+    <associate|auto-23|<tuple|3|25>>
+    <associate|auto-3|<tuple|?|11>>
+    <associate|auto-4|<tuple|1|12>>
+    <associate|auto-5|<tuple|1|12>>
+    <associate|auto-6|<tuple|2|13>>
+    <associate|auto-7|<tuple|3|14>>
+    <associate|auto-8|<tuple|3.1|14>>
+    <associate|auto-9|<tuple|1|15>>
+    <associate|bib-Abadi2016|<tuple|4|25>>
+    <associate|bib-Alan2019|<tuple|2|25>>
+    <associate|bib-Augonnet2011|<tuple|5|25>>
+    <associate|bib-Awar2021|<tuple|6|25>>
+    <associate|bib-Bauer2014|<tuple|7|25>>
+    <associate|bib-Bauer2019|<tuple|8|25>>
+    <associate|bib-Bezanson2012|<tuple|9|25>>
+    <associate|bib-Bradbury2018|<tuple|10|25>>
+    <associate|bib-Bruckner2009|<tuple|3|25>>
+    <associate|bib-Castro2023|<tuple|11|25>>
+    <associate|bib-Coelho2017|<tuple|12|25>>
+    <associate|bib-Hoque2017|<tuple|13|25>>
+    <associate|bib-Kristensen2013|<tuple|17|25>>
+    <associate|bib-Kulkarni2023|<tuple|18|25>>
+    <associate|bib-Lam2015|<tuple|19|25>>
+    <associate|bib-Lenstra1990|<tuple|20|25>>
+    <associate|bib-Okuta2017|<tuple|22|25>>
+    <associate|bib-Paszke2019|<tuple|23|26>>
+    <associate|bib-Sabne2020|<tuple|24|26>>
+    <associate|bib-Slaughter2019|<tuple|25|26>>
+    <associate|bib-Stefan2014|<tuple|21|25>>
+    <associate|bib-Tejedor2016|<tuple|26|26>>
+    <associate|bib-Topcuoglu2002|<tuple|27|26>>
+    <associate|bib-cudagraphs|<tuple|1|25>>
+    <associate|bib-kloeckner2009|<tuple|14|25>>
+    <associate|bib-loopy|<tuple|15|25>>
+    <associate|bib-pyopencl|<tuple|16|25>>
   </collection>
 </references>
 
@@ -1474,6 +1589,8 @@
       Kulkarni2023
 
       kloeckner2009
+
+      Topcuoglu2002
     </associate>
     <\associate|figure>
       <tuple|normal|<\surround|<hidden-binding|<tuple>|1>|>
